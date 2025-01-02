@@ -1,4 +1,5 @@
 const Bicycle = require("../models/bicycle.model");
+const PartOption = require("../models/partOption.model");
 const mongoose = require("mongoose");
 
 // Get all bicycles
@@ -16,19 +17,34 @@ exports.getBicycles = async (req, res) => {
 // Create a new bicycle
 exports.createBicycle = async (req, res) => {
   try {
-    const { name, description, price, image, options } = req.body;
+    const { name, description, price, image, partOptions } = req.body;
+
+    // Fetch part options details from database
+    const detailedOptions = await PartOption.find({
+      _id: { $in: partOptions },
+    });
+
+    // Map the fetched part options to the expected structure
+    const formattedOptions = detailedOptions.map((option) => ({
+      category: option.category,
+      value: option.value,
+      stock: option.stock,
+    }));
+
     const newBicycle = new Bicycle({
       name,
       description,
       price,
       image,
-      options,
+      options: formattedOptions,
     });
+
     const savedBicycle = await newBicycle.save();
     res.status(201).json(savedBicycle);
   } catch (err) {
+    console.error("Error creating bicycle:", err);
     res
-      .status(400)
+      .status(500)
       .json({ message: "Failed to create bicycle", error: err.message });
   }
 };
@@ -62,7 +78,6 @@ exports.deleteBicycle = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Validate the ID format
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid bicycle ID" });
     }

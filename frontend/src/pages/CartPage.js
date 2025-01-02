@@ -2,28 +2,39 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getCart, removeFromCart, updateCartItem } from "../api/api";
-import LoadingSpinner from "../components/loadingSpinner/LoadingSpinner";
-import ErrorMessage from "../components/error/ErrorMessage";
+import LoadingSpinner from "../components/shared/loadingSpinner/LoadingSpinner";
+import ErrorMessage from "../components/shared/error/ErrorMessage";
 
 const CartPage = () => {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editingQuantities, setEditingQuantities] = useState({}); // Track quantity edits
+  const [editingQuantities, setEditingQuantities] = useState({});
 
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const data = await getCart();
+        const cartId = localStorage.getItem("cartId");
+
+        if (!cartId) {
+          setError("No cart found. Please add items to your cart.");
+          setLoading(false);
+          return;
+        }
+
+        const data = await getCart(cartId);
         setCart(data);
-        // Initialize editing quantities
+
         const initialQuantities = {};
         data.items.forEach((item) => {
           initialQuantities[item._id] = item.quantity;
         });
         setEditingQuantities(initialQuantities);
+
+        if (data.cartId) {
+          localStorage.setItem("cartId", data.cartId); // Sync localStorage
+        }
       } catch (err) {
-        console.error("Failed to fetch cart:", err);
         setError("Failed to load cart data.");
       } finally {
         setLoading(false);
@@ -35,14 +46,11 @@ const CartPage = () => {
 
   const handleRemoveItem = async (itemId) => {
     try {
-      await removeFromCart(itemId);
+      const cartId = localStorage.getItem("cartId");
+      const updatedCart = await removeFromCart(cartId, itemId); // Ensure `itemId` is passed here
       toast.success("Item removed from cart!");
-      setCart((prevCart) => ({
-        ...prevCart,
-        items: prevCart.items.filter((item) => item._id !== itemId),
-      }));
+      setCart(updatedCart);
     } catch (err) {
-      console.error("Failed to remove item:", err);
       toast.error("Failed to remove item from cart.");
     }
   };
@@ -55,23 +63,21 @@ const CartPage = () => {
   };
 
   const handleSaveQuantity = async (itemId) => {
+    const cartId = localStorage.getItem("cartId"); // Get cartId from localStorage
     const newQuantity = editingQuantities[itemId];
 
-    if (newQuantity < 1) {
+    if (!newQuantity || newQuantity < 1) {
       toast.error("Quantity must be at least 1.");
       return;
     }
 
     try {
-      const updatedCart = await updateCartItem(itemId, {
+      // Call the API to update the quantity
+      const updatedCart = await updateCartItem(cartId, itemId, {
         quantity: newQuantity,
       });
-      setCart((prevCart) => ({
-        ...prevCart,
-        items: prevCart.items.map((item) =>
-          item._id === itemId ? { ...item, quantity: newQuantity } : item
-        ),
-      }));
+      setCart(updatedCart);
+
       toast.success("Quantity updated!");
     } catch (err) {
       console.error("Failed to update quantity:", err);
@@ -84,14 +90,14 @@ const CartPage = () => {
   if (!cart || cart.items.length === 0) return <p>Your cart is empty.</p>;
 
   const totalPrice = cart.items.reduce((acc, item) => {
-    console.log("Item Details:", item); // Debug each item's details
-    const price = item.bicycle?.price || 0; // Ensure price is valid
-    const quantity = item.quantity || 0; // Ensure quantity is valid
+    const price = item.bicycle?.price || 0;
+    const quantity = item.quantity || 0;
     return acc + price * quantity;
   }, 0);
 
-  console.log("Total Price:", totalPrice); // Debug the total price
-
+  if (!cart || !cart.items || cart.items.length === 0) {
+    return <p>Your cart is empty.</p>;
+  }
   return (
     <div className="container my-4">
       <h1>Your Cart</h1>
@@ -100,8 +106,8 @@ const CartPage = () => {
           <div className="row g-0">
             <div className="col-md-4">
               <img
-                src={item.bicycle.image || "https://via.placeholder.com/300"}
-                alt={item.bicycle.name}
+                src={item.bicycle?.image || "https://via.placeholder.com/300"}
+                alt={item.bicycle?.name || "No bicycle available"}
                 className="img-fluid rounded-start"
               />
             </div>

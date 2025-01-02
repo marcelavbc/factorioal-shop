@@ -1,52 +1,46 @@
 const Cart = require("../models/cart.model");
 const Bicycle = require("../models/bicycle.model");
+const mongoose = require("mongoose");
 
 // Add bicycle to cart
 exports.addToCart = async (req, res) => {
+  const { cartId, bicycleId, options, quantity } = req.body;
+
   try {
-    const { bicycleId, options, quantity } = req.body;
+    let cart;
 
-    console.log("Received Payload:", req.body); // Log the payload for debugging
-
-    // Validate request data
-    if (!bicycleId || !Array.isArray(options) || quantity < 1) {
-      console.error("Validation Failed: Invalid request data");
-      return res.status(400).json({ message: "Invalid request data" });
+    if (!cartId) {
+      // Create a new cart only if `cartId` is missing
+      cart = await Cart.create({ items: [] });
+    } else {
+      cart = await Cart.findById(cartId);
+      if (!cart) {
+        return res.status(404).json({ message: "Cart not found" });
+      }
     }
 
-    // Check if the bicycle exists
-    const bicycle = await Bicycle.findById(bicycleId);
-    if (!bicycle) {
-      console.error("Validation Failed: Bicycle not found");
-      return res.status(404).json({ message: "Bicycle not found" });
-    }
-
-    // Fetch or create the cart
-    let cart = await Cart.findOne();
-    if (!cart) {
-      cart = new Cart();
-    }
-
-    // Ensure we're adding only the bicycleId (not the full bicycle object)
-    const item = cart.items.find(
+    // Add the bicycle to the cart
+    const existingItem = cart.items.find(
       (item) =>
         item.bicycle.toString() === bicycleId &&
         JSON.stringify(item.options) === JSON.stringify(options)
     );
 
-    if (item) {
-      // Update quantity if the item exists
-      item.quantity += quantity;
+    if (existingItem) {
+      existingItem.quantity += quantity;
     } else {
-      // Add new item to the cart with the bicycleId reference
       cart.items.push({ bicycle: bicycleId, options, quantity });
     }
 
-    // Save the cart
-    const updatedCart = await cart.save();
-    res.status(200).json(updatedCart);
+    await cart.save();
+
+    res.status(200).json({
+      message: "Item added to cart",
+      cartId: cart._id,
+      items: cart.items,
+    });
   } catch (err) {
-    console.error("Error adding to cart:", err); // Debug errors
+    console.error("Error adding to cart:", err);
     res
       .status(500)
       .json({ message: "Failed to add to cart", error: err.message });
@@ -56,16 +50,25 @@ exports.addToCart = async (req, res) => {
 // Get cart contents
 exports.getCart = async (req, res) => {
   try {
-    const cart = await Cart.findOne().populate({
+    let { cartId } = req.query;
+
+    if (!cartId) {
+      return res.status(200).json({
+        message: "No cart found. Please add items to your cart.",
+        items: [],
+      });
+    }
+
+    const cart = await Cart.findById(cartId).populate({
       path: "items.bicycle",
       select: "name price image",
     });
 
     if (!cart) {
-      return res.status(404).json({ message: "Cart is empty" });
+      return res.status(404).json({ message: "Cart not found" });
     }
 
-    res.status(200).json(cart);
+    res.status(200).json({ cartId: cart._id, items: cart.items });
   } catch (err) {
     console.error("Error fetching cart:", err);
     res
@@ -75,51 +78,76 @@ exports.getCart = async (req, res) => {
 };
 
 // Remove a cart item
-exports.removeCartItem = async (req, res) => {
-  try {
-    const itemId = req.params.id;
+exports.removeFromCart = async (req, res) => {
+  const { cartId } = req.body;
+  const { id: itemId } = req.params;
 
-    // Find the cart and remove the item
-    let cart = await Cart.findOne(); // Assuming a single cart per user
+  if (!cartId || !itemId) {
+    return res
+      .status(400)
+      .json({ message: "Cart ID and Item ID are required" });
+  }
+
+  try {
+    const cart = await Cart.findById(cartId);
     if (!cart) {
       return res.status(404).json({ message: "Cart not found" });
     }
 
-    // Filter out the item to be removed
     cart.items = cart.items.filter((item) => item._id.toString() !== itemId);
 
     await cart.save();
-
-    res.status(200).json({ message: "Item removed from cart", cart });
-  } catch (error) {
+    // Fetch the updated cart with populated bicycle details
+    const updatedCart = await Cart.findById(cartId).populate({
+      path: "items.bicycle",
+      select: "name price image",
+    });
+    res.status(200).json(updatedCart);
+  } catch (err) {
+    console.error("Error removing from cart:", err);
     res
       .status(500)
-      .json({ message: "Failed to remove item", error: error.message });
+      .json({ message: "Failed to remove item", error: err.message });
   }
 };
 
 // Update a cart item
 exports.updateCartItem = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { quantity } = req.body;
+  const { cartId } = req.query; // Expect `cartId` from the query params
+  const { id: itemId } = req.params; // Item to update
+  const { quantity } = req.body;
 
-    if (quantity < 1) {
-      return res.status(400).json({ message: "Quantity must be at least 1." });
+  if (!cartId) {
+    return res.status(400).json({ message: "cartId is required" });
+  }
+
+  if (!quantity || quantity < 1) {
+    return res.status(400).json({ message: "Quantity must be at least 1." });
+  }
+
+  try {
+    const cart = await Cart.findById(cartId).populate({
+      path: "items.bicycle",
+      select: "name price image",
+    });
+
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found to update" });
     }
 
-    const cart = await Cart.findOne();
-    if (!cart) return res.status(404).json({ message: "Cart not found" });
-
-    const item = cart.items.find((item) => item._id.toString() === id);
-    if (!item)
+    // Find the item in the cart
+    const item = cart.items.find((item) => item._id.toString() === itemId);
+    if (!item) {
       return res.status(404).json({ message: "Item not found in cart" });
+    }
 
+    // Update the quantity
     item.quantity = quantity;
-    await cart.save();
+    await cart.save(); // Save updated cart
 
-    res.json(cart);
+    res.status(200).json(cart);
   } catch (err) {
+    console.error("Error updating cart item:", err);
     res
       .status(500)
       .json({ message: "Failed to update cart item", error: err.message });

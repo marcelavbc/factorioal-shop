@@ -2,7 +2,7 @@ const express = require("express");
 const {
   addToCart,
   getCart,
-  removeCartItem,
+  removeFromCart,
   updateCartItem,
 } = require("../controllers/cart.controller");
 const validateCartItem = require("../middleware/cartValidation.middleware");
@@ -16,7 +16,7 @@ router.post("/", validateCartItem, addToCart);
 router.get("/", getCart);
 
 // Delete route to remove an item from the cart
-router.delete("/:id", removeCartItem);
+router.delete("/:id", removeFromCart);
 
 // Update route to update the quantity of an item in the cart
 router.patch("/:id", updateCartItem);

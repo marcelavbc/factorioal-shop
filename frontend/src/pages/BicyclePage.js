@@ -3,8 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 import { addToCart, getBicycleById } from "../api/api";
-import LoadingSpinner from "../components/loadingSpinner/LoadingSpinner";
-import ErrorMessage from "../components/error/ErrorMessage";
+import LoadingSpinner from "../components/shared/loadingSpinner/LoadingSpinner";
+import ErrorMessage from "../components/shared/error/ErrorMessage";
 
 const BicyclePage = () => {
   const { id } = useParams(); // Get bicycle ID from URL
@@ -20,10 +20,8 @@ const BicyclePage = () => {
     const fetchBicycle = async () => {
       try {
         const data = await getBicycleById(id);
-        console.log("Fetched Bicycle Data:", data); // Log the full data
         setBicycle(data);
       } catch (err) {
-        console.error("Failed to fetch bicycle:", err);
         setError("Failed to load bicycle details.");
       } finally {
         setLoading(false);
@@ -34,6 +32,8 @@ const BicyclePage = () => {
 
   // Handle adding to cart
   const handleAddToCart = async () => {
+    let cartId = localStorage.getItem("cartId");
+
     if (!bicycle || Object.keys(customization).length === 0) {
       toast.error("Please select all customization options.");
       return;
@@ -41,6 +41,7 @@ const BicyclePage = () => {
 
     try {
       const payload = {
+        cartId: cartId || undefined,
         bicycleId: id,
         options: Object.entries(customization).map(([category, value]) => ({
           category,
@@ -48,12 +49,19 @@ const BicyclePage = () => {
         })),
         quantity,
       };
-      console.log("Payload for Add to Cart:", payload);
 
-      await addToCart(payload);
+      console.log("Payload for addToCart:", payload);
+
+      const response = await addToCart(payload);
+
+      if (!cartId && response.cartId) {
+        localStorage.setItem("cartId", response.cartId);
+      }
+
       toast.success("Bicycle added to cart!");
       navigate("/cart");
     } catch (err) {
+      console.error("Failed to add to cart:", err);
       toast.error("Failed to add to cart.");
     }
   };
@@ -107,12 +115,37 @@ const BicyclePage = () => {
           <hr />
           <h5>Customize Your Bicycle</h5>
           {bicycle.options && Array.isArray(bicycle.options) ? (
-            bicycle.options.map(({ category, values }) =>
-              renderOptions(category, values)
-            )
+            bicycle.options.map(({ category, values }) => (
+              <div key={category} className="mb-3">
+                <label>{category}:</label>
+                <select
+                  className="form-select"
+                  onChange={(e) =>
+                    setCustomization((prev) => ({
+                      ...prev,
+                      [category]: e.target.value,
+                    }))
+                  }
+                  value={customization[category] || ""}
+                >
+                  <option value="">-- Select --</option>
+                  {values.map((option, index) => (
+                    <option
+                      key={index}
+                      value={option}
+                      disabled={option.stock === "out_of_stock"}
+                    >
+                      {option}{" "}
+                      {option.stock === "out_of_stock" && "(Out of stock)"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))
           ) : (
             <p>No customization options available for this bicycle.</p>
           )}
+
           <div className="mt-3">
             <label>Quantity:</label>
             <input

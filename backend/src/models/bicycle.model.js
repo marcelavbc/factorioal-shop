@@ -8,7 +8,13 @@ const bicycleSchema = new mongoose.Schema({
   options: [
     {
       category: { type: String, required: true },
-      values: [{ type: String, required: true }],
+      values: [{ type: String }],
+    },
+  ],
+  partOptions: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PartOption",
     },
   ],
 });
