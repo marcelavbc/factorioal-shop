@@ -24,11 +24,13 @@ exports.createBicycle = async (req, res) => {
       _id: { $in: partOptions },
     });
 
-    // Map the fetched part options to the expected structure
+    if (detailedOptions.length !== partOptions.length) {
+      return res.status(400).json({ message: "Some part options are invalid" });
+    }
+
     const formattedOptions = detailedOptions.map((option) => ({
       category: option.category,
-      value: option.value,
-      stock: option.stock,
+      values: [{ value: option.value, stock: option.stock }],
     }));
 
     const newBicycle = new Bicycle({
@@ -37,6 +39,7 @@ exports.createBicycle = async (req, res) => {
       price,
       image,
       options: formattedOptions,
+      partOptions,
     });
 
     const savedBicycle = await newBicycle.save();
@@ -65,8 +68,17 @@ exports.getBicycleById = async (req, res) => {
       return res.status(404).json({ message: "Bicycle not found" });
     }
 
-    res.status(200).json(bicycle);
+    // Ensure values include stock information
+    const optionsWithStock = bicycle.options.map((option) => ({
+      category: option.category,
+      values: Array.isArray(option.values)
+        ? option.values
+        : Object.values(option.values),
+    }));
+
+    res.status(200).json({ ...bicycle.toObject(), options: optionsWithStock });
   } catch (err) {
+    console.error("Error fetching bicycle:", err);
     res
       .status(500)
       .json({ message: "Failed to fetch bicycle", error: err.message });

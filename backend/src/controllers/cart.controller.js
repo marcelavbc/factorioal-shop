@@ -54,7 +54,7 @@ exports.getCart = async (req, res) => {
 
     if (!cartId) {
       return res.status(200).json({
-        message: "No cart found. Please add items to your cart.",
+        message: "Your cart is empty. Please add items to your cart.",
         items: [],
       });
     }

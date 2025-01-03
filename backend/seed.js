@@ -46,10 +46,8 @@ const seedDatabase = async () => {
         stock: "in_stock",
         restrictions: { "Rim Color": ["Blue"] },
       },
-
       { category: "Frame Finish", value: "Matte", stock: "in_stock" },
       { category: "Frame Finish", value: "Shiny", stock: "in_stock" },
-
       {
         category: "Wheels",
         value: "Road Wheels",
@@ -67,11 +65,9 @@ const seedDatabase = async () => {
         stock: "in_stock",
         restrictions: { "Rim Color": ["Red"] },
       },
-
       { category: "Rim Color", value: "Red", stock: "in_stock" },
       { category: "Rim Color", value: "Black", stock: "in_stock" },
       { category: "Rim Color", value: "Blue", stock: "in_stock" },
-
       { category: "Chain", value: "Single-Speed Chain", stock: "in_stock" },
       { category: "Chain", value: "8-Speed Chain", stock: "in_stock" },
     ];
@@ -88,11 +84,35 @@ const seedDatabase = async () => {
         image:
           "https://plus.unsplash.com/premium_photo-1682430478591-ffae0132d88e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         options: [
-          { category: "Frame Type", values: ["Full Suspension", "Diamond"] },
-          { category: "Frame Finish", values: ["Matte", "Shiny"] },
-          { category: "Wheels", values: ["Road Wheels"] },
-          { category: "Rim Color", values: ["Red", "Black"] },
-          { category: "Chain", values: ["Single-Speed Chain"] },
+          {
+            category: "Frame Type",
+            values: [
+              { value: "Full Suspension", stock: "in_stock" },
+              { value: "Diamond", stock: "in_stock" },
+            ],
+          },
+          {
+            category: "Frame Finish",
+            values: [
+              { value: "Matte", stock: "in_stock" },
+              { value: "Shiny", stock: "in_stock" },
+            ],
+          },
+          {
+            category: "Wheels",
+            values: [{ value: "Road Wheels", stock: "in_stock" }],
+          },
+          {
+            category: "Rim Color",
+            values: [
+              { value: "Red", stock: "in_stock" },
+              { value: "Black", stock: "in_stock" },
+            ],
+          },
+          {
+            category: "Chain",
+            values: [{ value: "Single-Speed Chain", stock: "in_stock" }],
+          },
         ],
       },
       {
@@ -102,11 +122,26 @@ const seedDatabase = async () => {
         image:
           "https://plus.unsplash.com/premium_photo-1684096758573-cd4acd2a12c4?q=80&w=1925&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         options: [
-          { category: "Frame Type", values: ["Full Suspension"] },
-          { category: "Frame Finish", values: ["Matte"] },
-          { category: "Wheels", values: ["Mountain Wheels"] },
-          { category: "Rim Color", values: ["Black"] },
-          { category: "Chain", values: ["8-Speed Chain"] },
+          {
+            category: "Frame Type",
+            values: [{ value: "Full Suspension", stock: "in_stock" }],
+          },
+          {
+            category: "Frame Finish",
+            values: [{ value: "Matte", stock: "in_stock" }],
+          },
+          {
+            category: "Wheels",
+            values: [{ value: "Mountain Wheels", stock: "in_stock" }],
+          },
+          {
+            category: "Rim Color",
+            values: [{ value: "Black", stock: "in_stock" }],
+          },
+          {
+            category: "Chain",
+            values: [{ value: "8-Speed Chain", stock: "in_stock" }],
+          },
         ],
       },
       {
@@ -116,11 +151,29 @@ const seedDatabase = async () => {
         image:
           "https://images.unsplash.com/photo-1528784351875-d797d86873a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         options: [
-          { category: "Frame Type", values: ["Step-Through"] },
-          { category: "Frame Finish", values: ["Shiny"] },
-          { category: "Wheels", values: ["Road Wheels", "Mountain Wheels"] },
-          { category: "Rim Color", values: ["Blue"] },
-          { category: "Chain", values: ["Single-Speed Chain"] },
+          {
+            category: "Frame Type",
+            values: [{ value: "Step-Through", stock: "in_stock" }],
+          },
+          {
+            category: "Frame Finish",
+            values: [{ value: "Shiny", stock: "in_stock" }],
+          },
+          {
+            category: "Wheels",
+            values: [
+              { value: "Road Wheels", stock: "in_stock" },
+              { value: "Mountain Wheels", stock: "out_of_stock" },
+            ],
+          },
+          {
+            category: "Rim Color",
+            values: [{ value: "Blue", stock: "in_stock" }],
+          },
+          {
+            category: "Chain",
+            values: [{ value: "Single-Speed Chain", stock: "in_stock" }],
+          },
         ],
       },
       {
@@ -130,11 +183,26 @@ const seedDatabase = async () => {
         image:
           "https://images.unsplash.com/photo-1528629297340-d1d466945dc5?q=80&w=2122&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         options: [
-          { category: "Frame Type", values: ["Full Suspension"] },
-          { category: "Frame Finish", values: ["Matte"] },
-          { category: "Wheels", values: ["Fat Bike Wheels"] },
-          { category: "Rim Color", values: ["Black"] },
-          { category: "Chain", values: ["8-Speed Chain"] },
+          {
+            category: "Frame Type",
+            values: [{ value: "Full Suspension", stock: "in_stock" }],
+          },
+          {
+            category: "Frame Finish",
+            values: [{ value: "Matte", stock: "in_stock" }],
+          },
+          {
+            category: "Wheels",
+            values: [{ value: "Fat Bike Wheels", stock: "in_stock" }],
+          },
+          {
+            category: "Rim Color",
+            values: [{ value: "Black", stock: "in_stock" }],
+          },
+          {
+            category: "Chain",
+            values: [{ value: "8-Speed Chain", stock: "in_stock" }],
+          },
         ],
       },
     ];

@@ -6,7 +6,7 @@ const partOptionSchema = new mongoose.Schema({
   stock: { type: String, required: true, enum: ["in_stock", "out_of_stock"] },
   restrictions: {
     type: Map,
-    of: [String], // Map with string keys and array of strings as values
+    of: [String],
   },
 });
 

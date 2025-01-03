@@ -20,7 +20,10 @@ const BicyclePage = () => {
     const fetchBicycle = async () => {
       try {
         const data = await getBicycleById(id);
-        setBicycle(data);
+
+        // Merge options by category
+        const mergedOptions = mergeOptionsByCategory(data.options);
+        setBicycle({ ...data, options: mergedOptions });
       } catch (err) {
         setError("Failed to load bicycle details.");
       } finally {
@@ -29,6 +32,29 @@ const BicyclePage = () => {
     };
     fetchBicycle();
   }, [id]);
+
+  // Merge part options into existing categories
+  const mergeOptionsByCategory = (optionsArray) => {
+    const mergedOptions = {};
+
+    optionsArray.forEach(({ category, values }) => {
+      if (!mergedOptions[category]) {
+        mergedOptions[category] = [];
+      }
+
+      // Ensure unique values are added
+      values.forEach((val) => {
+        if (!mergedOptions[category].some((v) => v.value === val.value)) {
+          mergedOptions[category].push(val);
+        }
+      });
+    });
+
+    return Object.entries(mergedOptions).map(([category, values]) => ({
+      category,
+      values,
+    }));
+  };
 
   // Handle adding to cart
   const handleAddToCart = async () => {
@@ -50,8 +76,6 @@ const BicyclePage = () => {
         quantity,
       };
 
-      console.log("Payload for addToCart:", payload);
-
       const response = await addToCart(payload);
 
       if (!cartId && response.cartId) {
@@ -61,38 +85,44 @@ const BicyclePage = () => {
       toast.success("Bicycle added to cart!");
       navigate("/cart");
     } catch (err) {
-      console.error("Failed to add to cart:", err);
       toast.error("Failed to add to cart.");
     }
   };
 
   // Render customization options
-  const renderOptions = (category, values) => (
-    <div key={category} className="mb-3">
-      <label>{category}:</label>
-      <select
-        className="form-select"
-        onChange={(e) =>
-          setCustomization((prev) => ({ ...prev, [category]: e.target.value }))
-        }
-        value={customization[category] || ""}
-      >
-        <option value="">-- Select --</option>
-        {values?.map((option) => {
-          console.log("Option:", option);
-          return (
+  const renderOptions = (category, values) => {
+    if (!values || values.length === 0) {
+      return null;
+    }
+
+    return (
+      <div key={category} className="mb-3">
+        <label>{category}:</label>
+        <select
+          className="form-select"
+          onChange={(e) =>
+            setCustomization((prev) => ({
+              ...prev,
+              [category]: e.target.value,
+            }))
+          }
+          value={customization[category] || ""}
+        >
+          <option value="">-- Select --</option>
+          {values.map((option, index) => (
             <option
-              key={option}
-              value={option}
-              disabled={false} // Adjust this if stock info is available
+              key={index}
+              value={option.value}
+              disabled={option.stock === "out_of_stock"}
             >
-              {option}
+              {option.value}{" "}
+              {option.stock === "out_of_stock" && "(Temporary Out of Stock)"}
             </option>
-          );
-        })}
-      </select>
-    </div>
-  );
+          ))}
+        </select>
+      </div>
+    );
+  };
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
@@ -115,33 +145,9 @@ const BicyclePage = () => {
           <hr />
           <h5>Customize Your Bicycle</h5>
           {bicycle.options && Array.isArray(bicycle.options) ? (
-            bicycle.options.map(({ category, values }) => (
-              <div key={category} className="mb-3">
-                <label>{category}:</label>
-                <select
-                  className="form-select"
-                  onChange={(e) =>
-                    setCustomization((prev) => ({
-                      ...prev,
-                      [category]: e.target.value,
-                    }))
-                  }
-                  value={customization[category] || ""}
-                >
-                  <option value="">-- Select --</option>
-                  {values.map((option, index) => (
-                    <option
-                      key={index}
-                      value={option}
-                      disabled={option.stock === "out_of_stock"}
-                    >
-                      {option}{" "}
-                      {option.stock === "out_of_stock" && "(Out of stock)"}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))
+            bicycle.options.map(({ category, values }) =>
+              renderOptions(category, values)
+            )
           ) : (
             <p>No customization options available for this bicycle.</p>
           )}

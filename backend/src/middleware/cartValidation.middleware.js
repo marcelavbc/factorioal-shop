@@ -5,24 +5,18 @@ const validateCartItem = async (req, res, next) => {
 
   try {
     for (const option of options) {
-      console.log("Validating Option:", option); // Log each option
-
-      // Find the PartOption in the database
+      // Find the selected option in the database
       const partOption = await PartOption.findOne({
-        category: option.category.trim(),
-        value: option.value.trim(),
+        category: option.category,
+        value: option.value,
       });
 
-      console.log("PartOption Found:", partOption); // Log the result
-
-      // If the PartOption does not exist, return an error
       if (!partOption) {
         return res.status(400).json({
           message: `Invalid option: ${option.category} - ${option.value}`,
         });
       }
 
-      // If the PartOption is out of stock, return an error
       if (partOption.stock === "out_of_stock") {
         return res.status(400).json({
           message: `${option.category} option "${option.value}" is out of stock.`,
@@ -31,10 +25,9 @@ const validateCartItem = async (req, res, next) => {
 
       // Check for restrictions
       if (partOption.restrictions) {
-        for (const [
-          restrictedCategory,
-          restrictedValues,
-        ] of partOption.restrictions) {
+        for (const [restrictedCategory, restrictedValues] of Object.entries(
+          partOption.restrictions
+        )) {
           const conflictingOption = options.find(
             (opt) =>
               opt.category === restrictedCategory &&

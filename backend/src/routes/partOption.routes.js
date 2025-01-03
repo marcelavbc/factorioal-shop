@@ -4,6 +4,8 @@ const {
   removeOption,
   toggleStock,
   updateRestrictions,
+  getPartOptions,
+  deletePartOption,
 } = require("../controllers/partOption.controller");
 const router = express.Router();
 
@@ -18,5 +20,11 @@ router.patch("/:id/stock", toggleStock);
 
 // Update compatibility rules
 router.patch("/:id/restrictions", updateRestrictions);
+
+// Fetch all part options
+router.get("/", getPartOptions);
+
+// Delete a specific part option
+router.delete("/:id", deletePartOption);
 
 module.exports = router;

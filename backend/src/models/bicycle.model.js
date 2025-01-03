@@ -8,7 +8,16 @@ const bicycleSchema = new mongoose.Schema({
   options: [
     {
       category: { type: String, required: true },
-      values: [{ type: String }],
+      values: [
+        {
+          value: { type: String, required: true },
+          stock: {
+            type: String,
+            required: true,
+            enum: ["in_stock", "out_of_stock"],
+          },
+        },
+      ],
     },
   ],
   partOptions: [
