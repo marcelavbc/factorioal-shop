@@ -15,13 +15,10 @@ const BicyclePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch the bicycle details
   useEffect(() => {
     const fetchBicycle = async () => {
       try {
         const data = await getBicycleById(id);
-
-        // Merge options by category
         const mergedOptions = mergeOptionsByCategory(data.options);
         setBicycle({ ...data, options: mergedOptions });
       } catch (err) {
@@ -33,7 +30,6 @@ const BicyclePage = () => {
     fetchBicycle();
   }, [id]);
 
-  // Merge part options into existing categories
   const mergeOptionsByCategory = (optionsArray) => {
     const mergedOptions = {};
 
@@ -42,7 +38,6 @@ const BicyclePage = () => {
         mergedOptions[category] = [];
       }
 
-      // Ensure unique values are added
       values.forEach((val) => {
         if (!mergedOptions[category].some((v) => v.value === val.value)) {
           mergedOptions[category].push(val);
@@ -56,7 +51,6 @@ const BicyclePage = () => {
     }));
   };
 
-  // Handle adding to cart
   const handleAddToCart = async () => {
     let cartId = localStorage.getItem("cartId");
 
@@ -89,36 +83,92 @@ const BicyclePage = () => {
     }
   };
 
+  const handleRestrictions = (category, selectedValue) => {
+    setCustomization((prevCustomization) => {
+      const newCustomization = {
+        ...prevCustomization,
+        [category]: selectedValue,
+      };
+
+      // Find the selected option's restrictions
+      const selectedOption = bicycle.options
+        .find((opt) => opt.category === category)
+        ?.values.find((val) => val.value === selectedValue);
+
+      if (!selectedOption) {
+        return prevCustomization;
+      }
+
+      if (
+        !selectedOption.restrictions ||
+        Object.keys(selectedOption.restrictions).length === 0
+      ) {
+        return newCustomization;
+      }
+
+      // Apply restrictions by resetting disallowed selections
+      Object.entries(selectedOption.restrictions).forEach(
+        ([restrictedCategory, allowedValues]) => {
+          // Reset the restricted category if the current selection is invalid
+          if (!allowedValues.includes(newCustomization[restrictedCategory])) {
+            newCustomization[restrictedCategory] = "";
+          }
+        }
+      );
+
+      return newCustomization;
+    });
+  };
+
   // Render customization options
   const renderOptions = (category, values) => {
-    if (!values || values.length === 0) {
-      return null;
-    }
+    if (!values || values.length === 0) return null;
+
+    let allowedValues = values.map((opt) => opt.value);
+
+    // Apply restrictions by filtering out disallowed values
+    Object.entries(customization).forEach(
+      ([selectedCategory, selectedValue]) => {
+        const selectedOption = bicycle.options
+          .find((opt) => opt.category === selectedCategory)
+          ?.values.find((val) => val.value === selectedValue);
+
+        if (selectedOption && selectedOption.restrictions?.[category]) {
+          allowedValues = allowedValues.filter(
+            (value) => !selectedOption.restrictions[category].includes(value)
+          );
+        }
+      }
+    );
 
     return (
       <div key={category} className="mb-3">
         <label>{category}:</label>
         <select
           className="form-select"
-          onChange={(e) =>
+          onChange={(e) => {
+            const selectedValue = e.target.value;
+            handleRestrictions(category, selectedValue);
             setCustomization((prev) => ({
               ...prev,
-              [category]: e.target.value,
-            }))
-          }
+              [category]: selectedValue,
+            }));
+          }}
           value={customization[category] || ""}
         >
           <option value="">-- Select --</option>
-          {values.map((option, index) => (
-            <option
-              key={index}
-              value={option.value}
-              disabled={option.stock === "out_of_stock"}
-            >
-              {option.value}{" "}
-              {option.stock === "out_of_stock" && "(Temporary Out of Stock)"}
-            </option>
-          ))}
+          {values
+            .filter((option) => allowedValues.includes(option.value))
+            .map((option, index) => (
+              <option
+                key={index}
+                value={option.value}
+                disabled={option.stock === "out_of_stock"}
+              >
+                {option.value}{" "}
+                {option.stock === "out_of_stock" && "(Temporary Out of Stock)"}
+              </option>
+            ))}
         </select>
       </div>
     );

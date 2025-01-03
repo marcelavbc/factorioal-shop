@@ -19,7 +19,6 @@ exports.createBicycle = async (req, res) => {
   try {
     const { name, description, price, image, partOptions } = req.body;
 
-    // Fetch part options details from database
     const detailedOptions = await PartOption.find({
       _id: { $in: partOptions },
     });
@@ -57,28 +56,46 @@ exports.getBicycleById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Validate the ID format
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid bicycle ID" });
     }
 
-    const bicycle = await Bicycle.findById(id);
+    const bicycle = await Bicycle.findById(id).populate("partOptions");
 
     if (!bicycle) {
       return res.status(404).json({ message: "Bicycle not found" });
     }
 
-    // Ensure values include stock information
-    const optionsWithStock = bicycle.options.map((option) => ({
-      category: option.category,
-      values: Array.isArray(option.values)
-        ? option.values
-        : Object.values(option.values),
-    }));
+    // Fetch all part options for this bicycle
+    const partOptions = await PartOption.find({
+      category: { $in: bicycle.options.map((opt) => opt.category) },
+    });
 
-    res.status(200).json({ ...bicycle.toObject(), options: optionsWithStock });
+    // Map part options to add restrictions
+    const optionsWithRestrictions = bicycle.options.map((option) => {
+      const matchingParts = partOptions.filter(
+        (part) => part.category === option.category
+      );
+
+      return {
+        ...option.toObject(),
+        values: option.values.map((value) => {
+          const matchingPart = matchingParts.find(
+            (part) => part.value === value.value
+          );
+          return {
+            ...value.toObject(),
+            restrictions: matchingPart ? matchingPart.restrictions : {},
+          };
+        }),
+      };
+    });
+
+    res
+      .status(200)
+      .json({ ...bicycle.toObject(), options: optionsWithRestrictions });
   } catch (err) {
-    console.error("Error fetching bicycle:", err);
+    console.error("❌ Error fetching bicycle:", err);
     res
       .status(500)
       .json({ message: "Failed to fetch bicycle", error: err.message });

@@ -21,13 +21,11 @@ const connectDB = async () => {
 // Seed bicycles and part options
 const seedDatabase = async () => {
   try {
-    // Clear existing data
     await Bicycle.deleteMany({});
     await PartOption.deleteMany({});
 
     console.log("Existing data cleared.");
 
-    // Create part options with restrictions
     const partOptions = [
       {
         category: "Frame Type",
@@ -75,7 +73,6 @@ const seedDatabase = async () => {
     const createdPartOptions = await PartOption.insertMany(partOptions);
     console.log("Part options seeded:", createdPartOptions);
 
-    // Create bicycles
     const bicycles = [
       {
         name: "Urban Commuter",
@@ -100,7 +97,10 @@ const seedDatabase = async () => {
           },
           {
             category: "Wheels",
-            values: [{ value: "Road Wheels", stock: "in_stock" }],
+            values: [
+              { value: "Road Wheels", stock: "in_stock" },
+              { value: "Mountain Wheels", stock: "in_stock" },
+            ],
           },
           {
             category: "Rim Color",
@@ -121,6 +121,7 @@ const seedDatabase = async () => {
         price: 1200,
         image:
           "https://plus.unsplash.com/premium_photo-1684096758573-cd4acd2a12c4?q=80&w=1925&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+
         options: [
           {
             category: "Frame Type",
@@ -132,47 +133,21 @@ const seedDatabase = async () => {
           },
           {
             category: "Wheels",
-            values: [{ value: "Mountain Wheels", stock: "in_stock" }],
-          },
-          {
-            category: "Rim Color",
-            values: [{ value: "Black", stock: "in_stock" }],
-          },
-          {
-            category: "Chain",
-            values: [{ value: "8-Speed Chain", stock: "in_stock" }],
-          },
-        ],
-      },
-      {
-        name: "Beach Cruiser",
-        description: "Relaxed rides along the beach.",
-        price: 600,
-        image:
-          "https://images.unsplash.com/photo-1528784351875-d797d86873a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        options: [
-          {
-            category: "Frame Type",
-            values: [{ value: "Step-Through", stock: "in_stock" }],
-          },
-          {
-            category: "Frame Finish",
-            values: [{ value: "Shiny", stock: "in_stock" }],
-          },
-          {
-            category: "Wheels",
             values: [
+              { value: "Mountain Wheels", stock: "in_stock" },
               { value: "Road Wheels", stock: "in_stock" },
-              { value: "Mountain Wheels", stock: "out_of_stock" },
             ],
           },
           {
             category: "Rim Color",
-            values: [{ value: "Blue", stock: "in_stock" }],
+            values: [
+              { value: "Black", stock: "in_stock" },
+              { value: "Red", stock: "in_stock" },
+            ],
           },
           {
             category: "Chain",
-            values: [{ value: "Single-Speed Chain", stock: "in_stock" }],
+            values: [{ value: "8-Speed Chain", stock: "in_stock" }],
           },
         ],
       },
@@ -182,10 +157,14 @@ const seedDatabase = async () => {
         price: 1500,
         image:
           "https://images.unsplash.com/photo-1528629297340-d1d466945dc5?q=80&w=2122&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+
         options: [
           {
             category: "Frame Type",
-            values: [{ value: "Full Suspension", stock: "in_stock" }],
+            values: [
+              { value: "Full Suspension", stock: "in_stock" },
+              { value: "Diamond", stock: "in_stock" }, // ✅ Added extra
+            ],
           },
           {
             category: "Frame Finish",
@@ -193,11 +172,18 @@ const seedDatabase = async () => {
           },
           {
             category: "Wheels",
-            values: [{ value: "Fat Bike Wheels", stock: "in_stock" }],
+            values: [
+              { value: "Fat Bike Wheels", stock: "in_stock" },
+              { value: "Road Wheels", stock: "in_stock" },
+            ],
           },
           {
             category: "Rim Color",
-            values: [{ value: "Black", stock: "in_stock" }],
+            values: [
+              { value: "Black", stock: "in_stock" },
+              { value: "Red", stock: "in_stock" },
+              { value: "Blue", stock: "in_stock" },
+            ],
           },
           {
             category: "Chain",
@@ -208,12 +194,12 @@ const seedDatabase = async () => {
     ];
 
     const createdBicycles = await Bicycle.insertMany(bicycles);
-    console.log("Bicycles seeded:", createdBicycles);
+    console.log("🚲 Bicycles seeded:", createdBicycles);
 
-    console.log("Database seeding complete.");
+    console.log("✅ Database seeding complete.");
     process.exit(0);
   } catch (err) {
-    console.error("Error seeding database:", err);
+    console.error("❌ Error seeding database:", err);
     process.exit(1);
   }
 };
