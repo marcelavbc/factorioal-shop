@@ -15,6 +15,9 @@ const DashboardLayout = () => {
         <Link className="nav-link" to="/admin/part-options">
           Manage Part Options
         </Link>
+        <Link to="/admin/restrictions" className="nav-link">
+          Manage Restrictions
+        </Link>
       </nav>
       <Outlet />
     </div>

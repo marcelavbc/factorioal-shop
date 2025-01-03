@@ -8,6 +8,7 @@ import AdminOverview from "./pages/admin/AdminOverview";
 import AdminBicycles from "./pages/admin/AdminBicycles";
 import AdminParts from "./pages/admin/AdminParts";
 import { ToastContainer } from "react-toastify";
+import AdminRestrictions from "./pages/admin/AdminRestrictions";
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
           <Route index element={<AdminOverview />} />
           <Route path="bicycles" element={<AdminBicycles />} />
           <Route path="/admin/part-options" element={<AdminParts />} />
+          <Route path="/admin/restrictions" element={<AdminRestrictions />} />
         </Route>
       </Routes>
       <ToastContainer />

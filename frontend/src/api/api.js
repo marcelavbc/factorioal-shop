@@ -126,3 +126,37 @@ export const createPartOption = async (partOptionData) => {
     throw error.response?.data || error;
   }
 };
+
+// Add a new part option with restrictions
+export const addPartOption = async (partOptionData) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/part-options`,
+      partOptionData
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error adding part option:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+// Update restrictions for a part option
+export const updateRestrictions = async (id, restrictions) => {
+  try {
+    const response = await axios.patch(
+      `${API_BASE_URL}/part-options/${id}/restrictions`,
+      { restrictions }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error updating restrictions:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

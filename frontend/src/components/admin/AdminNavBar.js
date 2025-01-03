@@ -36,6 +36,11 @@ const AdminNavBar = () => {
                 Manage Part Options
               </Link>
             </li>
+            <li>
+              <Link to="/admin/restrictions" className="nav-link">
+                Manage Restrictions
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
