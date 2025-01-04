@@ -1,10 +1,28 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, Outlet } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { getCart } from "../../api/api";
+
 import "./layout.scss";
 
 const Layout = () => {
-  const { cartItems } = useCart();
+  const { cartItems, setCartItems } = useCart();
+
+  useEffect(() => {
+    const updateCartCount = async () => {
+      const cartId = localStorage.getItem("cartId");
+      if (!cartId) return;
+
+      const cart = await getCart(cartId);
+      const totalQuantity = cart.items.reduce(
+        (sum, item) => sum + item.quantity,
+        0
+      );
+      setCartItems(totalQuantity);
+    };
+
+    updateCartCount();
+  }, []);
 
   return (
     <div className="layout-container">

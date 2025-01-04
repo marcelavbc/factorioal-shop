@@ -3,10 +3,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Select from "react-select";
 
-import { addToCart, getBicycleById } from "../../api/api";
+import {
+  addToCart,
+  getBicycleById,
+  getCart,
+  updateCartItem,
+} from "../../api/api";
 import LoadingSpinner from "../../components/shared/loadingSpinner/LoadingSpinner";
 import ErrorMessage from "../../components/shared/error/ErrorMessage";
-import { useCart } from "../../context/CartContext"; // ✅ Import Cart Context
+import { useCart } from "../../context/CartContext";
 
 import "./bicyclePage.scss";
 
@@ -18,7 +23,7 @@ const BicyclePage = () => {
   const [quantity, setQuantity] = useState("1");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { setCartItems } = useCart(); // ✅ Use Context
+  const { setCartItems } = useCart();
 
   useEffect(() => {
     const fetchBicycle = async () => {
@@ -66,16 +71,43 @@ const BicyclePage = () => {
         quantity: parseInt(quantity, 10),
       };
 
-      const response = await addToCart(payload);
+      // Fetch the current cart to check for duplicates
+      let currentCart = cartId ? await getCart(cartId) : { items: [] };
 
-      if (!cartId && response.cartId) {
-        localStorage.setItem("cartId", response.cartId);
+      const existingItem = currentCart.items.find((item) => {
+        if (item.bicycle._id !== id) return false;
+
+        if (item.options.length !== payload.options.length) return false;
+        return item.options.every(
+          (opt, index) =>
+            opt.category === payload.options[index].category &&
+            opt.value === payload.options[index].value
+        );
+      });
+
+      if (existingItem) {
+        // Update quantity instead of adding a duplicate
+        const updatedQuantity = existingItem.quantity + parseInt(quantity, 10);
+        await updateCartItem(cartId, existingItem._id, {
+          quantity: updatedQuantity,
+        });
+
+        toast.success(`Updated quantity to ${updatedQuantity}!`);
+      } else {
+        // Add new item to cart
+        const response = await addToCart(payload);
+        if (!cartId && response.cartId) {
+          localStorage.setItem("cartId", response.cartId);
+        }
+        toast.success("Bicycle added to cart!");
       }
 
-      // ✅ Update Cart Count Immediately
-      setCartItems((prev) => prev + parseInt(quantity, 10));
+      // Fetch updated cart and update state
+      let updatedCart = await getCart(cartId);
+      setCartItems(
+        updatedCart.items.reduce((sum, item) => sum + item.quantity, 0)
+      );
 
-      toast.success("Bicycle added to cart!");
       navigate("/cart");
     } catch (err) {
       toast.error("Failed to add to cart.");

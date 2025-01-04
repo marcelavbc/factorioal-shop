@@ -49,26 +49,28 @@ const CartPage = () => {
     fetchCart();
   }, [setCartItems]);
 
-  const handleRemoveItem = async (itemId) => {
-    try {
-      const cartId = localStorage.getItem("cartId");
-      const updatedCart = await removeFromCart(cartId, itemId);
-
-      toast.success("Item removed from cart!");
-      setCart(updatedCart);
-
-      setCartItems(updatedCart.items.length);
-    } catch (err) {
-      toast.error("Failed to remove item from cart.");
-    }
-  };
-
   const handleQuantityChange = (itemId, value) => {
     if (value === "" || /^[1-9]\d*$/.test(value)) {
       setEditingQuantities((prev) => ({
         ...prev,
         [itemId]: value,
       }));
+    }
+  };
+
+  const handleRemoveItem = async (itemId) => {
+    try {
+      const cartId = localStorage.getItem("cartId");
+      const updatedCart = await removeFromCart(cartId, itemId);
+      setCart(updatedCart);
+
+      setCartItems(
+        updatedCart.items.reduce((sum, item) => sum + item.quantity, 0)
+      );
+
+      toast.success("Item removed from cart!");
+    } catch (err) {
+      toast.error("Failed to remove item from cart.");
     }
   };
 
@@ -87,7 +89,9 @@ const CartPage = () => {
       });
       setCart(updatedCart);
 
-      setCartItems(updatedCart.items.length);
+      setCartItems(
+        updatedCart.items.reduce((sum, item) => sum + item.quantity, 0)
+      );
 
       toast.success("Quantity updated!");
     } catch (err) {

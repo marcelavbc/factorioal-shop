@@ -22,23 +22,25 @@ export const CartProvider = ({ children }) => {
         if (!cartId) return;
 
         const cart = await getCart(cartId);
-        setCartItems(cart.items.length);
+        //Calculate total quantity (sum of all item quantities)
+        const totalQuantity = cart.items.reduce(
+          (sum, item) => sum + item.quantity,
+          0
+        );
+        setCartItems(totalQuantity);
       } catch (err) {
         console.error("Error fetching cart:", err);
       }
+    };
 
-      CartProvider.propTypes = {
-        children: PropTypes.node.isRequired,
-      };
+    CartProvider.propTypes = {
+      children: PropTypes.node.isRequired,
     };
 
     fetchCart();
   }, []);
 
-  const value = useMemo(
-    () => ({ cartItems, setCartItems }),
-    [cartItems, setCartItems]
-  );
+  const value = useMemo(() => ({ cartItems, setCartItems }), [cartItems]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
