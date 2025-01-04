@@ -111,6 +111,24 @@ export const createBicycle = async (bicycleData) => {
   }
 };
 
+// Update an existing bicycle
+export const updateBicycle = async (id, bicycleData) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/bicycles/${id}`,
+      bicycleData
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error updating bicycle:",
+      error.response?.data || error.message
+    );
+    throw error.response?.data || error;
+  }
+};
+
+// Create a new part option
 export const createPartOption = async (partOptionData) => {
   try {
     const response = await axios.post(
@@ -144,7 +162,7 @@ export const addPartOption = async (partOptionData) => {
   }
 };
 
-// Update Part Option (e.g., change stock status)
+// Update Part Option
 export const updatePartOption = async (optionId, updatedData) => {
   try {
     const response = await axios.put(

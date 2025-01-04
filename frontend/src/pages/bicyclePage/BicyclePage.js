@@ -14,6 +14,7 @@ import ErrorMessage from "../../components/shared/error/ErrorMessage";
 import { useCart } from "../../context/CartContext";
 
 import "./bicyclePage.scss";
+import { BICYCLES_INPUTS_FIXED_ORDER } from "../../constants";
 
 const BicyclePage = () => {
   const { id } = useParams();
@@ -217,13 +218,17 @@ const BicyclePage = () => {
           <h4>${bicycle.price}</h4>
           <h5>Customize Your Bicycle</h5>
           {bicycle.options && Array.isArray(bicycle.options) ? (
-            bicycle.options.map(({ category, values }) =>
-              renderOptions(category, values)
-            )
+            BICYCLES_INPUTS_FIXED_ORDER.map((category) => {
+              const option = bicycle.options.find(
+                (opt) => opt.category === category
+              );
+              return option
+                ? renderOptions(option.category, option.values)
+                : null;
+            })
           ) : (
             <p>No customization options available for this bicycle.</p>
           )}
-
           <div className="quantity-container">
             <label htmlFor="quantity">Quantity:</label>
             <input

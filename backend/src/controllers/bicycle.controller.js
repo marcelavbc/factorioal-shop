@@ -66,34 +66,25 @@ exports.getBicycleById = async (req, res) => {
       return res.status(404).json({ message: "Bicycle not found" });
     }
 
-    // Fetch all part options for this bicycle
-    const partOptions = await PartOption.find({
-      category: { $in: bicycle.options.map((opt) => opt.category) },
-    });
-
-    // Map part options to add **allowedParts**
-    const optionsWithAllowedParts = bicycle.options.map((option) => {
-      const matchingParts = partOptions.filter(
-        (part) => part.category === option.category
+    // Group part options by category
+    const groupedOptions = bicycle.partOptions.reduce((acc, part) => {
+      const existingCategory = acc.find(
+        (opt) => opt.category === part.category
       );
 
-      return {
-        ...option.toObject(),
-        values: option.values.map((value) => {
-          const matchingPart = matchingParts.find(
-            (part) => part.value === value.value
-          );
-          return {
-            ...value.toObject(),
-            allowedParts: matchingPart ? matchingPart.allowedParts : {},
-          };
-        }),
-      };
-    });
+      if (existingCategory) {
+        existingCategory.values.push({ value: part.value, stock: part.stock });
+      } else {
+        acc.push({
+          category: part.category,
+          values: [{ value: part.value, stock: part.stock }],
+        });
+      }
 
-    res
-      .status(200)
-      .json({ ...bicycle.toObject(), options: optionsWithAllowedParts });
+      return acc;
+    }, []);
+
+    res.status(200).json({ ...bicycle.toObject(), options: groupedOptions });
   } catch (err) {
     console.error("❌ Error fetching bicycle:", err);
     res
@@ -122,5 +113,57 @@ exports.deleteBicycle = async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to delete bicycle", error: err.message });
+  }
+};
+
+// Update an existing bicycle
+exports.updateBicycle = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid bicycle ID" });
+    }
+
+    const { name, description, price, image, partOptions } = req.body;
+
+    // Ensure part options exist before updating
+    const detailedOptions = await PartOption.find({
+      _id: { $in: partOptions },
+    });
+
+    if (detailedOptions.length !== partOptions.length) {
+      return res.status(400).json({ message: "Some part options are invalid" });
+    }
+
+    // Format part options
+    const formattedOptions = detailedOptions.map((option) => ({
+      category: option.category,
+      values: [{ value: option.value, stock: option.stock }],
+    }));
+
+    const updatedBicycle = await Bicycle.findByIdAndUpdate(
+      id,
+      {
+        name,
+        description,
+        price,
+        image,
+        options: formattedOptions,
+        partOptions,
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedBicycle) {
+      return res.status(404).json({ message: "Bicycle not found" });
+    }
+
+    res.status(200).json(updatedBicycle);
+  } catch (err) {
+    console.error("❌ Error updating bicycle:", err);
+    res
+      .status(500)
+      .json({ message: "Failed to update bicycle", error: err.message });
   }
 };

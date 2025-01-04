@@ -5,18 +5,25 @@ import {
   deleteBicycle,
   createBicycle,
   getPartOptions,
+  updateBicycle,
 } from "../../../api/api";
 import LoadingSpinner from "../../../components/shared/loadingSpinner/LoadingSpinner";
 import ErrorMessage from "../../../components/shared/error/ErrorMessage";
+import { Modal, Button } from "react-bootstrap";
 import "./adminBicycles.scss";
 
 const AdminBicycles = () => {
   const [bicycles, setBicycles] = useState([]);
-  const [partOptions, setPartOptions] = useState([]);
+  const [partOptions, setPartOptions] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [checkedOptions, setCheckedOptions] = useState({});
-  const [newBicycle, setNewBicycle] = useState({
+  const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingBicycleId, setEditingBicycleId] = useState(null);
+  const [originalBicycle, setOriginalBicycle] = useState(null);
+
+  const [bicycleForm, setBicycleForm] = useState({
     name: "",
     description: "",
     price: "",
@@ -31,15 +38,9 @@ const AdminBicycles = () => {
           getBicycles(),
           getPartOptions(),
         ]);
+
         setBicycles(bicycleData);
-
-        const groupedOptions = partOptionData.reduce((acc, option) => {
-          acc[option.category] = acc[option.category] || [];
-          acc[option.category].push(option);
-          return acc;
-        }, {});
-
-        setPartOptions(groupedOptions);
+        setPartOptions(groupPartOptions(partOptionData));
       } catch (err) {
         console.error("Failed to fetch data:", err);
         setError("Failed to load data.");
@@ -50,6 +51,14 @@ const AdminBicycles = () => {
 
     fetchData();
   }, []);
+
+  const groupPartOptions = (options) => {
+    return options.reduce((acc, option) => {
+      acc[option.category] = acc[option.category] || [];
+      acc[option.category].push(option);
+      return acc;
+    }, {});
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -62,48 +71,132 @@ const AdminBicycles = () => {
     }
   };
 
-  const handleCreate = async () => {
-    if (!newBicycle.name || !newBicycle.description || !newBicycle.price) {
+  const handleSaveBicycle = async () => {
+    if (!bicycleForm.name || !bicycleForm.description || !bicycleForm.price) {
       toast.error("All fields are required!");
       return;
     }
 
-    try {
-      const createdBicycle = await createBicycle(newBicycle);
-      toast.success("Bicycle created!");
+    const formattedBicycle = {
+      ...bicycleForm,
+      price: parseFloat(bicycleForm.price),
+    };
 
-      // Add new bicycle to the list
-      setBicycles((prev) => [...prev, createdBicycle]);
-
-      // Reset form fields + clear checkboxes
-      setNewBicycle({
-        name: "",
-        description: "",
-        price: "",
-        image: "",
-        partOptions: [], // Clears selected part options
-      });
-
-      // Clear checked state
-      setCheckedOptions({});
-    } catch (err) {
-      console.error("Failed to create bicycle:", err);
-      toast.error("Failed to create bicycle.");
+    if (formattedBicycle.price <= 0 || isNaN(formattedBicycle.price)) {
+      toast.error("Price must be a valid number greater than zero!");
+      return;
     }
+
+    const missingOptions = Object.keys(partOptions).filter(
+      (category) =>
+        !partOptions[category].some((option) =>
+          bicycleForm.partOptions.includes(option._id)
+        )
+    );
+
+    if (missingOptions.length > 0) {
+      toast.error(
+        `Please select at least one option for: ${missingOptions.join(", ")}`
+      );
+      return;
+    }
+
+    //Dynamically update partOptions based on user modifications
+    let updatedPartOptions = [...originalBicycle.partOptions];
+
+    // Remove unchecked options
+    updatedPartOptions = updatedPartOptions.filter(
+      (opt) => checkedOptions[opt]
+    );
+
+    // Add newly selected options
+    bicycleForm.partOptions.forEach((opt) => {
+      if (!updatedPartOptions.includes(opt)) {
+        updatedPartOptions.push(opt);
+      }
+    });
+
+    formattedBicycle.partOptions = updatedPartOptions;
+
+    try {
+      if (isEditing) {
+        await updateBicycle(editingBicycleId, formattedBicycle);
+        toast.success("Bicycle updated!");
+        setBicycles((prev) =>
+          prev.map((bike) =>
+            bike._id === editingBicycleId
+              ? { ...bike, ...formattedBicycle }
+              : bike
+          )
+        );
+      } else {
+        const createdBicycle = await createBicycle(formattedBicycle);
+        toast.success("Bicycle created!");
+        setBicycles((prev) => [...prev, createdBicycle]);
+      }
+
+      setShowModal(false);
+      resetForm();
+    } catch (err) {
+      console.error("Failed to save bicycle:", err);
+      toast.error("Failed to save bicycle.");
+    }
+  };
+
+  const handleEdit = (bicycle) => {
+    setBicycleForm({
+      name: bicycle.name,
+      description: bicycle.description,
+      price: bicycle.price,
+      image: bicycle.image || "",
+      partOptions: [...bicycle.partOptions],
+    });
+
+    setCheckedOptions(
+      bicycle.partOptions.reduce((acc, opt) => {
+        acc[opt] = true;
+        return acc;
+      }, {})
+    );
+
+    setIsEditing(true);
+    setEditingBicycleId(bicycle._id);
+    setOriginalBicycle(bicycle);
+    setShowModal(true);
+  };
+
+  const resetForm = () => {
+    setBicycleForm({
+      name: "",
+      description: "",
+      price: "",
+      image: "",
+      partOptions: [],
+    });
+    setCheckedOptions({});
+    setIsEditing(false);
+    setEditingBicycleId(null);
+    setOriginalBicycle(null);
   };
 
   const handlePartOptionChange = (e) => {
     const optionId = e.target.value;
     const isChecked = e.target.checked;
 
-    setNewBicycle((prev) => ({
-      ...prev,
-      partOptions: isChecked
-        ? [...prev.partOptions, optionId]
-        : prev.partOptions.filter((id) => id !== optionId),
-    }));
+    setBicycleForm((prev) => {
+      let updatedOptions = [...prev.partOptions];
 
-    // Update checked state
+      if (isChecked) {
+        if (!updatedOptions.includes(optionId)) {
+          updatedOptions.push(optionId);
+        }
+      } else {
+        updatedOptions = updatedOptions.filter((id) => id !== optionId);
+      }
+
+      return { ...prev, partOptions: updatedOptions };
+    });
+
     setCheckedOptions((prev) => ({
       ...prev,
       [optionId]: isChecked,
@@ -117,7 +210,6 @@ const AdminBicycles = () => {
     <div className="container my-4">
       <h1>Manage Bicycles</h1>
 
-      {/* List of Bicycles */}
       <table className="table">
         <thead>
           <tr>
@@ -135,6 +227,12 @@ const AdminBicycles = () => {
               <td>${bike.price}</td>
               <td>
                 <button
+                  className="btn btn-warning me-2"
+                  onClick={() => handleEdit(bike)}
+                >
+                  Edit
+                </button>
+                <button
                   className="btn btn-danger"
                   onClick={() => handleDelete(bike._id)}
                 >
@@ -145,83 +243,130 @@ const AdminBicycles = () => {
           ))}
         </tbody>
       </table>
-      <h2>Add New Bicycle</h2>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleCreate();
+
+      <button
+        className="btn btn-primary mt-4"
+        onClick={() => {
+          resetForm();
+          setShowModal(true);
         }}
       >
-        <div className="mb-3">
-          <label htmlFor="name" className="form-label">
-            Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            className="form-control"
-            value={newBicycle.name}
-            onChange={(e) =>
-              setNewBicycle((prev) => ({ ...prev, name: e.target.value }))
-            }
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="description" className="form-label">
-            Description
-          </label>
-          <textarea
-            id="description"
-            className="form-control"
-            value={newBicycle.description}
-            onChange={(e) =>
-              setNewBicycle((prev) => ({
-                ...prev,
-                description: e.target.value,
-              }))
-            }
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="price" className="form-label">
-            Price
-          </label>
-          <input
-            type="number"
-            id="price"
-            className="form-control"
-            value={newBicycle.price}
-            onChange={(e) =>
-              setNewBicycle((prev) => ({ ...prev, price: e.target.value }))
-            }
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="part-options" className="form-label">
-            Part Options
-          </label>
-          {Object.entries(partOptions).map(([category, options]) => (
-            <div key={category} className="part-options-group">
-              <h5>{category}</h5>
-              {options.map((option) => (
-                <div key={option._id} className="form-check">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    value={option._id}
-                    checked={!!checkedOptions[option._id]}
-                    onChange={handlePartOptionChange}
-                  />
-                  <label className="form-check-label">{option.value}</label>
+        Add New Bicycle
+      </button>
+
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        dialogClassName="custom-modal-size"
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {isEditing ? "Edit Bicycle" : "Add New Bicycle"}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="mb-3">
+            <label htmlFor="name" className="form-label">
+              Name
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              value={bicycleForm.name}
+              onChange={(e) =>
+                setBicycleForm({ ...bicycleForm, name: e.target.value })
+              }
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="description" className="form-label">
+              Description
+            </label>
+            <textarea
+              id="description"
+              className="form-control"
+              value={bicycleForm.description}
+              onChange={(e) =>
+                setBicycleForm((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="price" className="form-label">
+              Price
+            </label>
+            <input
+              type="number"
+              id="price"
+              className="form-control"
+              value={bicycleForm.price}
+              onChange={(e) =>
+                setBicycleForm((prev) => ({ ...prev, price: e.target.value }))
+              }
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="image" className="form-label">
+              Image
+            </label>
+            <input
+              type="text"
+              id="image"
+              className="form-control"
+              value={bicycleForm.image}
+              onChange={(e) =>
+                setBicycleForm((prev) => ({ ...prev, image: e.target.value }))
+              }
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="part-options" className="form-label">
+              Part Options
+            </label>
+            <div className="part-options-container">
+              {Object.entries(partOptions).map(([category, options]) => (
+                <div key={category} className="part-options-group">
+                  <h5>{category}</h5>
+                  <div className="checkbox-grid">
+                    {options.map((option) => (
+                      <div key={option._id} className="form-check">
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          value={option._id}
+                          checked={
+                            checkedOptions[option._id] !== undefined
+                              ? checkedOptions[option._id]
+                              : originalBicycle?.partOptions.includes(
+                                  option._id
+                                )
+                          }
+                          onChange={handlePartOptionChange}
+                        />
+                        <label className="form-check-label">
+                          {option.value}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
-          ))}
-        </div>
-        <button type="submit" className="btn btn-primary">
-          Add Bicycle
-        </button>
-      </form>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleSaveBicycle}>
+            {isEditing ? "Update" : "Add"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
