@@ -1,14 +1,14 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import BicyclePage from "./pages/BicyclePage";
-import CartPage from "./pages/CartPage";
-import DashboardLayout from "./components/admin/DashboardLayout";
-import AdminOverview from "./pages/admin/AdminOverview";
-import AdminBicycles from "./pages/admin/AdminBicycles";
-import AdminParts from "./pages/admin/AdminParts";
 import { ToastContainer } from "react-toastify";
-import AdminRestrictions from "./pages/admin/AdminRestrictions";
+import AdminRestrictions from "./pages/admin/adminRestrictions/AdminRestrictions";
+import BicyclePage from "./pages/bicyclePage/BicyclePage";
+import HomePage from "./pages/homePage/HomePage";
+import CartPage from "./pages/cartPage/CartPage";
+import AdminOverview from "./pages/admin/adminOverview/AdminOverview";
+import DashboardLayout from "./components/admin/dashboardLayout/DashboardLayout";
+import AdminBicycles from "./pages/admin/adminBicycles/AdminBicycles";
+import AdminParts from "./pages/admin/adminParts/AdminParts";
 
 const App = () => {
   return (

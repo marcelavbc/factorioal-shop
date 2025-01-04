@@ -51,7 +51,7 @@ exports.createBicycle = async (req, res) => {
   }
 };
 
-// Get a bicycle by ID
+// Get a bicycle by ID (With Allowed Parts)
 exports.getBicycleById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -71,8 +71,8 @@ exports.getBicycleById = async (req, res) => {
       category: { $in: bicycle.options.map((opt) => opt.category) },
     });
 
-    // Map part options to add restrictions
-    const optionsWithRestrictions = bicycle.options.map((option) => {
+    // Map part options to add **allowedParts**
+    const optionsWithAllowedParts = bicycle.options.map((option) => {
       const matchingParts = partOptions.filter(
         (part) => part.category === option.category
       );
@@ -85,7 +85,7 @@ exports.getBicycleById = async (req, res) => {
           );
           return {
             ...value.toObject(),
-            restrictions: matchingPart ? matchingPart.restrictions : {},
+            allowedParts: matchingPart ? matchingPart.allowedParts : {},
           };
         }),
       };
@@ -93,7 +93,7 @@ exports.getBicycleById = async (req, res) => {
 
     res
       .status(200)
-      .json({ ...bicycle.toObject(), options: optionsWithRestrictions });
+      .json({ ...bicycle.toObject(), options: optionsWithAllowedParts });
   } catch (err) {
     console.error("❌ Error fetching bicycle:", err);
     res

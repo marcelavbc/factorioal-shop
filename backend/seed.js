@@ -31,7 +31,7 @@ const seedDatabase = async () => {
         category: "Frame Type",
         value: "Full Suspension",
         stock: "in_stock",
-        restrictions: { Wheels: ["Mountain Wheels"] },
+        allowedParts: {},
       },
       {
         category: "Frame Type",
@@ -42,7 +42,6 @@ const seedDatabase = async () => {
         category: "Frame Type",
         value: "Step-Through",
         stock: "in_stock",
-        restrictions: { "Rim Color": ["Blue"] },
       },
       { category: "Frame Finish", value: "Matte", stock: "in_stock" },
       { category: "Frame Finish", value: "Shiny", stock: "in_stock" },
@@ -55,17 +54,18 @@ const seedDatabase = async () => {
         category: "Wheels",
         value: "Mountain Wheels",
         stock: "in_stock",
-        restrictions: { "Frame Type": ["Step-Through"] },
+        allowedParts: { "Frame Type": ["Full Suspension"] },
       },
       {
         category: "Wheels",
         value: "Fat Bike Wheels",
         stock: "in_stock",
-        restrictions: { "Rim Color": ["Red"] },
+        allowedParts: { "Rim Color": ["Black", "Blue"] },
       },
       { category: "Rim Color", value: "Red", stock: "in_stock" },
       { category: "Rim Color", value: "Black", stock: "in_stock" },
       { category: "Rim Color", value: "Blue", stock: "in_stock" },
+
       { category: "Chain", value: "Single-Speed Chain", stock: "in_stock" },
       { category: "Chain", value: "8-Speed Chain", stock: "in_stock" },
     ];
@@ -184,6 +184,35 @@ const seedDatabase = async () => {
               { value: "Red", stock: "in_stock" },
               { value: "Blue", stock: "in_stock" },
             ],
+          },
+          {
+            category: "Chain",
+            values: [{ value: "8-Speed Chain", stock: "in_stock" }],
+          },
+        ],
+      },
+      {
+        name: "Speed Racer",
+        description: "Ultra-lightweight bike for high-speed rides.",
+        price: 2000,
+        image:
+          "https://plus.unsplash.com/premium_photo-1684820878202-52781d8e0ea9?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        options: [
+          {
+            category: "Frame Type",
+            values: [{ value: "Diamond", stock: "in_stock" }],
+          },
+          {
+            category: "Frame Finish",
+            values: [{ value: "Shiny", stock: "in_stock" }],
+          },
+          {
+            category: "Wheels",
+            values: [{ value: "Road Wheels", stock: "in_stock" }],
+          },
+          {
+            category: "Rim Color",
+            values: [{ value: "Red", stock: "in_stock" }],
           },
           {
             category: "Chain",

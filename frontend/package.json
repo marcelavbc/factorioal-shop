@@ -7,10 +7,13 @@
     "bootstrap": "^5.3.3",
     "cra-template": "1.2.0",
     "react": "^19.0.0",
+    "react-bootstrap": "^2.10.7",
     "react-dom": "^19.0.0",
     "react-router-dom": "^6.28.1",
     "react-scripts": "5.0.1",
-    "react-toastify": "^11.0.2"
+    "react-select": "^5.9.0",
+    "react-toastify": "^11.0.2",
+    "sass": "^1.83.0"
   },
   "scripts": {
     "start": "react-scripts start",

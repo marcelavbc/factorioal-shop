@@ -1,0 +1,140 @@
+.bicycle-container {
+  background-color: #f9f9f9;
+  padding: 20px;
+  min-height: 100vh;
+
+  .bicycle-details {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .bicycle-image img {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 8px;
+  }
+
+  .bicycle-info {
+    max-width: 500px;
+    position: relative;
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1rem;
+      color: #555;
+    }
+
+    h4 {
+      font-size: 1.5rem;
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .option-group {
+      margin-bottom: 15px;
+      position: relative; /* Keeps dropdown inside this container */
+
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+        background-color: #fff;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+        z-index: 100;
+        position: relative; /* Ensures dropdown stays inside */
+      }
+    }
+
+    /* 🚀 Fix dropdown positioning when open */
+    .option-group select:focus {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: white;
+      border: 1px solid #007bff;
+      box-shadow: 0px 4px 8px rgba(0, 123, 255, 0.2);
+      z-index: 1000; /* Ensures dropdown is above everything */
+    }
+
+    .quantity-container {
+      margin-top: 15px;
+      display: flex;
+      align-items: center;
+
+      label {
+        margin-right: 10px;
+        font-weight: bold;
+      }
+
+      input {
+        width: 60px;
+        text-align: center;
+      }
+    }
+
+    .add-to-cart {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      transition: 0.3s;
+
+      &:hover {
+        background: #0056b3;
+      }
+
+      &:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  /* ✅ Fix react-select dropdown */
+  .react-select-container {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  /* ✅ Improve styling */
+  .react-select__control {
+    border: 1px solid #ccc !important;
+    border-radius: 5px !important;
+    padding: 5px !important;
+    background: white !important;
+  }
+
+  /* ✅ Keep dropdown inside its parent */
+  .react-select__menu {
+    z-index: 9999 !important;
+    position: absolute !important;
+    background: white;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  /* ✅ Fix dropdown positioning if near the bottom */
+  .react-select__menu--bottom {
+    top: auto !important;
+    bottom: 100% !important;
+  }
+
+  /* ✅ Disabled options */
+  .react-select__option--is-disabled {
+    color: #999 !important;
+    cursor: not-allowed;
+  }
+}

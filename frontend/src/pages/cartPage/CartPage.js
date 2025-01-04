@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getCart, removeFromCart, updateCartItem } from "../api/api";
-import LoadingSpinner from "../components/shared/loadingSpinner/LoadingSpinner";
-import ErrorMessage from "../components/shared/error/ErrorMessage";
-
+import { getCart, removeFromCart, updateCartItem } from "../../api/api";
+import LoadingSpinner from "../../components/shared/loadingSpinner/LoadingSpinner";
+import ErrorMessage from "../../components/shared/error/ErrorMessage";
+import "./cartPage.scss";
 const CartPage = () => {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ const CartPage = () => {
   const handleRemoveItem = async (itemId) => {
     try {
       const cartId = localStorage.getItem("cartId");
-      const updatedCart = await removeFromCart(cartId, itemId); // Ensure `itemId` is passed here
+      const updatedCart = await removeFromCart(cartId, itemId);
       toast.success("Item removed from cart!");
       setCart(updatedCart);
     } catch (err) {
@@ -55,15 +55,18 @@ const CartPage = () => {
     }
   };
 
-  const handleQuantityChange = (itemId, newQuantity) => {
-    setEditingQuantities((prev) => ({
-      ...prev,
-      [itemId]: newQuantity,
-    }));
+  const handleQuantityChange = (itemId, value) => {
+    // ✅ Allow empty value & positive integers
+    if (value === "" || /^[1-9]\d*$/.test(value)) {
+      setEditingQuantities((prev) => ({
+        ...prev,
+        [itemId]: value,
+      }));
+    }
   };
 
   const handleSaveQuantity = async (itemId) => {
-    const cartId = localStorage.getItem("cartId"); // Get cartId from localStorage
+    const cartId = localStorage.getItem("cartId");
     const newQuantity = editingQuantities[itemId];
 
     if (!newQuantity || newQuantity < 1) {
@@ -72,22 +75,20 @@ const CartPage = () => {
     }
 
     try {
-      // Call the API to update the quantity
       const updatedCart = await updateCartItem(cartId, itemId, {
-        quantity: newQuantity,
+        quantity: parseInt(newQuantity, 10),
       });
       setCart(updatedCart);
-
       toast.success("Quantity updated!");
     } catch (err) {
-      console.error("Failed to update quantity:", err);
       toast.error("Failed to update quantity.");
     }
   };
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
-  if (!cart || cart.items.length === 0) return <p>Your cart is empty.</p>;
+  if (!cart || cart.items.length === 0)
+    return <ErrorMessage message="Your cart is empty." />;
 
   const totalPrice = cart.items.reduce((acc, item) => {
     const price = item.bicycle?.price || 0;
@@ -95,9 +96,6 @@ const CartPage = () => {
     return acc + price * quantity;
   }, 0);
 
-  if (!cart || !cart.items || cart.items.length === 0) {
-    return <p>Your cart is empty.</p>;
-  }
   return (
     <div className="container my-4">
       <h1>Your Cart</h1>
@@ -129,17 +127,17 @@ const CartPage = () => {
                 <div className="d-flex align-items-center mt-2">
                   <label className="me-2">Quantity:</label>
                   <input
-                    type="number"
-                    min="0"
+                    type="text"
                     value={editingQuantities[item._id] || ""}
                     onChange={(e) =>
-                      handleQuantityChange(item._id, Number(e.target.value))
+                      handleQuantityChange(item._id, e.target.value)
                     }
                     className="form-control w-25 me-2"
                   />
                   <button
                     className="btn btn-secondary"
                     onClick={() => handleSaveQuantity(item._id)}
+                    disabled={!editingQuantities[item._id]} // ✅ Disable if empty
                   >
                     Save
                   </button>

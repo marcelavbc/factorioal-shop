@@ -23,27 +23,29 @@ const validateCartItem = async (req, res, next) => {
         });
       }
 
-      // Check for restrictions
-      if (partOption.restrictions) {
-        for (const [restrictedCategory, restrictedValues] of Object.entries(
-          partOption.restrictions
+      // 🔥 Check for allowedParts
+      if (partOption.allowedParts) {
+        for (const [allowedCategory, allowedValues] of Object.entries(
+          partOption.allowedParts
         )) {
-          const conflictingOption = options.find(
-            (opt) =>
-              opt.category === restrictedCategory &&
-              restrictedValues.includes(opt.value)
+          const selectedOption = options.find(
+            (opt) => opt.category === allowedCategory
           );
 
-          if (conflictingOption) {
+          if (selectedOption && !allowedValues.includes(selectedOption.value)) {
             return res.status(400).json({
-              message: `Incompatible combination: ${option.category} "${option.value}" is not compatible with ${conflictingOption.category} "${conflictingOption.value}".`,
+              message: `Incompatible selection: ${option.category} "${
+                option.value
+              }" only allows ${allowedCategory} options: ${allowedValues.join(
+                ", "
+              )}. Your selection of "${selectedOption.value}" is not valid.`,
             });
           }
         }
       }
     }
 
-    next(); // Validation passed
+    next();
   } catch (err) {
     console.error("Error validating cart item:", err);
     res.status(500).json({ message: "Validation failed", error: err.message });

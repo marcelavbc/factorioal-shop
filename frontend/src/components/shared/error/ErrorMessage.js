@@ -1,6 +1,5 @@
-// src/components/error/ErrorMessage.js
-
 import React from "react";
+import PropTypes from "prop-types";
 
 const ErrorMessage = ({ message }) => {
   return (
@@ -11,3 +10,7 @@ const ErrorMessage = ({ message }) => {
 };
 
 export default ErrorMessage;
+
+ErrorMessage.propTypes = {
+  message: PropTypes.string,
+};

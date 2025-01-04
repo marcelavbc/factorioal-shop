@@ -127,7 +127,7 @@ export const createPartOption = async (partOptionData) => {
   }
 };
 
-// Add a new part option with restrictions
+// Add a new part option with allowed parts
 export const addPartOption = async (partOptionData) => {
   try {
     const response = await axios.post(
@@ -144,17 +144,31 @@ export const addPartOption = async (partOptionData) => {
   }
 };
 
-// Update restrictions for a part option
-export const updateRestrictions = async (id, restrictions) => {
+// Update Part Option (e.g., change stock status)
+export const updatePartOption = async (optionId, updatedData) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/part-options/${optionId}`,
+      updatedData
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Failed to update part option:", err);
+    throw err;
+  }
+};
+
+// Update allowed parts for a part option
+export const updateAllowedParts = async (id, allowedParts) => {
   try {
     const response = await axios.patch(
-      `${API_BASE_URL}/part-options/${id}/restrictions`,
-      { restrictions }
+      `${API_BASE_URL}/part-options/${id}/allowed-parts`,
+      { allowedParts }
     );
     return response.data;
   } catch (error) {
     console.error(
-      "Error updating restrictions:",
+      "Error updating allowed parts:",
       error.response?.data || error.message
     );
     throw error;

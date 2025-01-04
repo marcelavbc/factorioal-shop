@@ -5,24 +5,25 @@ import {
   deleteBicycle,
   createBicycle,
   getPartOptions,
-} from "../../api/api";
-import LoadingSpinner from "../../components/shared/loadingSpinner/LoadingSpinner";
-import ErrorMessage from "../../components/shared/error/ErrorMessage";
+} from "../../../api/api";
+import LoadingSpinner from "../../../components/shared/loadingSpinner/LoadingSpinner";
+import ErrorMessage from "../../../components/shared/error/ErrorMessage";
+import "./adminBicycles.scss";
 
 const AdminBicycles = () => {
   const [bicycles, setBicycles] = useState([]);
-  const [partOptions, setPartOptions] = useState([]); // Available part options
+  const [partOptions, setPartOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [checkedOptions, setCheckedOptions] = useState({});
   const [newBicycle, setNewBicycle] = useState({
     name: "",
     description: "",
     price: "",
     image: "",
-    partOptions: [], // Selected part options
+    partOptions: [],
   });
 
-  // Fetch bicycles and part options
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -31,7 +32,14 @@ const AdminBicycles = () => {
           getPartOptions(),
         ]);
         setBicycles(bicycleData);
-        setPartOptions(partOptionData);
+
+        const groupedOptions = partOptionData.reduce((acc, option) => {
+          acc[option.category] = acc[option.category] || [];
+          acc[option.category].push(option);
+          return acc;
+        }, {});
+
+        setPartOptions(groupedOptions);
       } catch (err) {
         console.error("Failed to fetch data:", err);
         setError("Failed to load data.");
@@ -63,14 +71,21 @@ const AdminBicycles = () => {
     try {
       const createdBicycle = await createBicycle(newBicycle);
       toast.success("Bicycle created!");
+
+      // Add new bicycle to the list
       setBicycles((prev) => [...prev, createdBicycle]);
+
+      // Reset form fields + clear checkboxes
       setNewBicycle({
         name: "",
         description: "",
         price: "",
         image: "",
-        partOptions: [],
+        partOptions: [], // Clears selected part options
       });
+
+      // Clear checked state
+      setCheckedOptions({});
     } catch (err) {
       console.error("Failed to create bicycle:", err);
       toast.error("Failed to create bicycle.");
@@ -79,11 +94,19 @@ const AdminBicycles = () => {
 
   const handlePartOptionChange = (e) => {
     const optionId = e.target.value;
+    const isChecked = e.target.checked;
+
     setNewBicycle((prev) => ({
       ...prev,
-      partOptions: e.target.checked
+      partOptions: isChecked
         ? [...prev.partOptions, optionId]
         : prev.partOptions.filter((id) => id !== optionId),
+    }));
+
+    // Update checked state
+    setCheckedOptions((prev) => ({
+      ...prev,
+      [optionId]: isChecked,
     }));
   };
 
@@ -122,8 +145,6 @@ const AdminBicycles = () => {
           ))}
         </tbody>
       </table>
-
-      {/* Add New Bicycle */}
       <h2>Add New Bicycle</h2>
       <form
         onSubmit={(e) => {
@@ -176,32 +197,24 @@ const AdminBicycles = () => {
           />
         </div>
         <div className="mb-3">
-          <label htmlFor="image" className="form-label">
-            Image URL
+          <label htmlFor="part-options" className="form-label">
+            Part Options
           </label>
-          <input
-            type="text"
-            id="image"
-            className="form-control"
-            value={newBicycle.image}
-            onChange={(e) =>
-              setNewBicycle((prev) => ({ ...prev, image: e.target.value }))
-            }
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Part Options</label>
-          {partOptions.map((option) => (
-            <div key={option._id} className="form-check">
-              <input
-                type="checkbox"
-                className="form-check-input"
-                value={option._id}
-                onChange={handlePartOptionChange}
-              />
-              <label className="form-check-label">
-                {option.category}: {option.value}
-              </label>
+          {Object.entries(partOptions).map(([category, options]) => (
+            <div key={category} className="part-options-group">
+              <h5>{category}</h5>
+              {options.map((option) => (
+                <div key={option._id} className="form-check">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    value={option._id}
+                    checked={!!checkedOptions[option._id]}
+                    onChange={handlePartOptionChange}
+                  />
+                  <label className="form-check-label">{option.value}</label>
+                </div>
+              ))}
             </div>
           ))}
         </div>

@@ -1,16 +1,16 @@
 const PartOption = require("../models/partOption.model");
 const Bicycle = require("../models/bicycle.model");
 
-// Add a new part option with restrictions
+// Add a new part option with allowedParts
 exports.addOption = async (req, res) => {
   try {
-    const { category, value, stock, restrictions } = req.body;
+    const { category, value, stock, allowedParts } = req.body;
 
     const newOption = new PartOption({
       category,
       value,
       stock: stock || "in_stock",
-      restrictions: restrictions || {},
+      allowedParts: allowedParts || {},
     });
 
     const savedOption = await newOption.save();
@@ -44,50 +44,53 @@ exports.removeOption = async (req, res) => {
   }
 };
 
-// Toggle stock status
-exports.toggleStock = async (req, res) => {
+// Update a part option (category, value, or stock)
+exports.updatePartOption = async (req, res) => {
   try {
     const { id } = req.params;
+    const { category, value, stock } = req.body;
 
     const option = await PartOption.findById(id);
     if (!option) {
       return res.status(404).json({ message: "Part option not found" });
     }
 
-    // Toggle the stock status
-    option.stock = option.stock === "in_stock" ? "out_of_stock" : "in_stock";
-    const updatedOption = await option.save();
+    // ✅ Update only the fields that were sent in the request
+    if (category !== undefined) option.category = category;
+    if (value !== undefined) option.value = value;
+    if (stock !== undefined) option.stock = stock;
 
+    const updatedOption = await option.save();
     res.status(200).json(updatedOption);
   } catch (err) {
-    console.error("Error toggling stock status:", err);
-    res
-      .status(500)
-      .json({ message: "Failed to toggle stock status", error: err.message });
+    console.error("Error updating part option:", err);
+    res.status(500).json({
+      message: "Failed to update part option",
+      error: err.message,
+    });
   }
 };
 
-// Update compatibility rules
-exports.updateRestrictions = async (req, res) => {
+// Update Allowed Parts
+exports.updateAllowedParts = async (req, res) => {
   try {
     const { id } = req.params;
-    const { restrictions } = req.body;
+    const { allowedParts } = req.body;
 
     const option = await PartOption.findById(id);
     if (!option) {
       return res.status(404).json({ message: "Part option not found" });
     }
 
-    // Update restrictions
-    option.restrictions = restrictions;
+    option.allowedParts = allowedParts;
     const updatedOption = await option.save();
 
     res.status(200).json(updatedOption);
   } catch (err) {
-    console.error("Error updating restrictions:", err);
+    console.error("Error updating allowed parts:", err);
     res
       .status(500)
-      .json({ message: "Failed to update restrictions", error: err.message });
+      .json({ message: "Failed to update allowed parts", error: err.message });
   }
 };
 
