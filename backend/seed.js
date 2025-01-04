@@ -25,89 +25,89 @@ const seedDatabase = async () => {
     await PartOption.deleteMany({});
     console.log("Existing data cleared.");
 
-    // Create part options with `allowedParts`
+    // Create part options with `  restrictions`
     const partOptionsData = [
       {
         category: "Frame Type",
         value: "Full Suspension",
         stock: "in_stock",
-        allowedParts: {},
+        restrictions: {},
       },
       {
         category: "Frame Type",
         value: "Diamond",
         stock: "in_stock",
-        allowedParts: {},
+        restrictions: {},
       },
       {
         category: "Frame Type",
         value: "Step-Through",
         stock: "in_stock",
-        allowedParts: {},
+        restrictions: {},
       },
 
       {
         category: "Frame Finish",
         value: "Matte",
         stock: "in_stock",
-        allowedParts: {},
+        restrictions: {},
       },
       {
         category: "Frame Finish",
         value: "Shiny",
         stock: "in_stock",
-        allowedParts: {},
+        restrictions: {},
       },
 
       {
         category: "Wheels",
         value: "Road Wheels",
         stock: "in_stock",
-        allowedParts: {},
+        restrictions: {},
       },
       {
         category: "Wheels",
         value: "Mountain Wheels",
         stock: "in_stock",
-        allowedParts: { "Frame Type": ["Full Suspension"] },
+        restrictions: { "Frame Type": ["Full Suspension"] },
       },
       {
         category: "Wheels",
         value: "Fat Bike Wheels",
         stock: "in_stock",
-        allowedParts: { "Rim Color": ["Black", "Blue"] },
+        restrictions: { "Rim Color": ["Red"] },
       },
 
       {
         category: "Rim Color",
         value: "Red",
         stock: "in_stock",
-        allowedParts: {},
+        restrictions: {},
       },
       {
         category: "Rim Color",
         value: "Black",
         stock: "in_stock",
-        allowedParts: {},
+        restrictions: {},
       },
       {
         category: "Rim Color",
         value: "Blue",
         stock: "in_stock",
-        allowedParts: {},
+        restrictions: {},
       },
 
       {
         category: "Chain",
         value: "Single-Speed Chain",
         stock: "in_stock",
-        allowedParts: {},
+        restrictions: {},
       },
       {
         category: "Chain",
         value: "8-Speed Chain",
         stock: "in_stock",
-        allowedParts: {},
+        restrictions: {},
       },
     ];
 

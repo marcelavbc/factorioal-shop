@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { getPartOptions, updateAllowedParts } from "../../../api/api";
+import { getPartOptions, updateRestrictions } from "../../../api/api";
 import LoadingSpinner from "../../../components/shared/loadingSpinner/LoadingSpinner";
 import ErrorMessage from "../../../components/shared/error/ErrorMessage";
 import { toast } from "react-toastify";
 import Select from "react-select";
-import { Modal, Button } from "react-bootstrap"; // ✅ Import Bootstrap Modal
+import { Accordion, Modal, Button } from "react-bootstrap";
+import "./adminRestrictions.scss";
 
 const AdminRestrictions = () => {
   const [partOptions, setPartOptions] = useState({});
@@ -12,14 +13,20 @@ const AdminRestrictions = () => {
   const [error, setError] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   const [editingRestriction, setEditingRestriction] = useState(null);
+  const [loadingAction, setLoadingAction] = useState(false);
   const [newRestriction, setNewRestriction] = useState({
     category: "",
     values: [],
   });
 
-  const [showModal, setShowModal] = useState(false); // ✅ Modal Visibility State
+  const [showModal, setShowModal] = useState(false);
 
-  // 🔄 Fetch Data & Auto-Refresh on Changes
+  const pageDescription = `
+  This page allows you to manage restrictions between different bicycle part options. 
+  You can set rules such as "If a bike has a Step-Through Frame, it cannot have Mountain Wheels."
+  Click on a part option to view or modify its restrictions.
+  `;
+
   useEffect(() => {
     const fetchPartOptions = async () => {
       try {
@@ -40,19 +47,6 @@ const AdminRestrictions = () => {
 
     fetchPartOptions();
   }, []);
-
-  // 🆕 Auto-Refresh Selected Part on Update
-  useEffect(() => {
-    if (selectedOption) {
-      setSelectedOption((prev) => {
-        if (!prev) return null;
-        return (
-          partOptions[prev.category]?.find((opt) => opt._id === prev._id) ||
-          prev
-        );
-      });
-    }
-  }, [partOptions]);
 
   const handleSelectOption = (option) => {
     setSelectedOption(option);
@@ -81,48 +75,56 @@ const AdminRestrictions = () => {
     }
 
     try {
-      const updatedAllowedParts = {
-        ...selectedOption.allowedParts,
+      const updatedRestrictions = {
+        ...selectedOption.restrictions,
         [newRestriction.category]: newRestriction.values,
       };
 
-      await updateAllowedParts(selectedOption._id, updatedAllowedParts); // ✅ API Call
+      await updateRestrictions(selectedOption._id, updatedRestrictions);
 
-      // 🔄 Update UI without refresh
+      setSelectedOption((prev) => ({
+        ...prev,
+        restrictions: updatedRestrictions,
+      }));
+
       setPartOptions((prev) => ({
         ...prev,
         [selectedOption.category]: prev[selectedOption.category].map((opt) =>
           opt._id === selectedOption._id
-            ? { ...opt, allowedParts: updatedAllowedParts } // ✅ Fix UI update
+            ? { ...opt, restrictions: updatedRestrictions }
             : opt
         ),
       }));
 
-      toast.success(
-        editingRestriction ? "Allowed Parts updated!" : "Allowed Parts added!"
-      );
+      toast.success("Restriction updated!");
       setShowModal(false);
     } catch (err) {
-      console.error("Failed to update allowed parts:", err);
-      toast.error("Failed to update allowed parts.");
+      console.error("Failed to update restrictions:", err);
+      toast.error("Failed to update restrictions.");
     }
   };
 
   const handleRemoveRestriction = async (category) => {
     if (!selectedOption) return;
 
+    setLoadingAction(true);
+
     try {
-      const updatedAllowedParts = { ...selectedOption.allowedParts };
-      delete updatedAllowedParts[category];
+      const updatedRestrictions = { ...selectedOption.restrictions };
+      delete updatedRestrictions[category];
 
-      await updateAllowedParts(selectedOption._id, updatedAllowedParts);
+      await updateRestrictions(selectedOption._id, updatedRestrictions);
 
-      // 🔄 Update UI without Refresh
+      setSelectedOption((prev) => ({
+        ...prev,
+        restrictions: updatedRestrictions,
+      }));
+
       setPartOptions((prev) => ({
         ...prev,
         [selectedOption.category]: prev[selectedOption.category].map((opt) =>
           opt._id === selectedOption._id
-            ? { ...opt, restrictions: updatedAllowedParts }
+            ? { ...opt, restrictions: updatedRestrictions }
             : opt
         ),
       }));
@@ -131,92 +133,90 @@ const AdminRestrictions = () => {
     } catch (err) {
       console.error("Failed to remove restriction:", err);
       toast.error("Failed to remove restriction.");
+    } finally {
+      setLoadingAction(false);
     }
   };
-
-  // 🛑 **Prevent Adding Duplicate Restrictions**
-  const availableCategories = Object.keys(partOptions).filter(
-    (category) => !selectedOption?.restrictions?.[category]
-  );
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
 
   return (
     <div className="container my-4">
-      <h1>Manage Part Option Restrictions</h1>
+      <h1>Manage Part Restrictions</h1>
+      <p className="text-muted">{pageDescription}</p>
 
-      <div className="mb-4">
-        <h3>Select Part Option</h3>
-        {Object.entries(partOptions).map(([category, options]) => (
-          <div key={category} className="part-options-group">
-            <h5 className="category-title">{category}</h5>
-            <ul className="list-group">
-              {options.map((option) => (
-                <li
-                  key={option._id}
-                  className={`list-group-item ${
-                    selectedOption?._id === option._id ? "active" : ""
-                  }`}
-                  onClick={() => handleSelectOption(option)}
-                  style={{ cursor: "pointer" }}
-                >
-                  {option.value} ({option.stock})
-                </li>
-              ))}
-            </ul>
-
-            {selectedOption && selectedOption.category === category && (
-              <div className="restriction-form">
-                <h4>Manage Restrictions for {selectedOption.value}</h4>
-                {Object.entries(selectedOption.restrictions || {}).length ===
-                0 ? (
-                  <p>No restrictions set.</p>
-                ) : (
-                  <ul className="list-group">
-                    {Object.entries(selectedOption.restrictions).map(
-                      ([category, values]) => (
-                        <li
-                          key={category}
-                          className="list-group-item d-flex justify-content-between"
-                        >
-                          <span>
-                            <strong>{category}</strong>: {values.join(", ")}
-                          </span>
-                          <div>
-                            <button
-                              className="btn btn-sm btn-warning me-2"
-                              onClick={() => handleOpenModal(category, values)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => handleRemoveRestriction(category)}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </li>
-                      )
-                    )}
-                  </ul>
-                )}
-
-                <button
-                  className="btn btn-primary mt-3"
-                  onClick={() => handleOpenModal()}
-                >
-                  Add Restriction
-                </button>
-              </div>
-            )}
-          </div>
+      <Accordion defaultActiveKey="0">
+        {Object.entries(partOptions).map(([category, options], index) => (
+          <Accordion.Item eventKey={index.toString()} key={category}>
+            <Accordion.Header>{category}</Accordion.Header>
+            <Accordion.Body>
+              <ul className="list-group">
+                {options.map((option) => (
+                  <li key={option._id} className="list-group-item">
+                    <button
+                      className={`btn btn-light w-100 text-start ${
+                        selectedOption?._id === option._id ? "active" : ""
+                      }`}
+                      onClick={() => handleSelectOption(option)}
+                    >
+                      {option.value} ({option.stock})
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </Accordion.Body>
+          </Accordion.Item>
         ))}
-      </div>
+      </Accordion>
 
-      {/* 🔥 Bootstrap Modal for Add/Edit Restriction */}
-      <Modal show={showModal} onHide={handleCloseModal}>
+      {selectedOption && (
+        <div className="restriction-form mt-4">
+          <h4>Manage Restrictions for {selectedOption.value}</h4>
+          {Object.entries(selectedOption.restrictions || {}).length === 0 ? (
+            <p>No restrictions set.</p>
+          ) : (
+            <ul className="list-group">
+              {Object.entries(selectedOption.restrictions).map(
+                ([category, values]) => (
+                  <li
+                    key={category}
+                    className="list-group-item d-flex justify-content-between"
+                  >
+                    <span>
+                      <strong>{category}</strong>: {values.join(", ")}
+                    </span>
+                    <div>
+                      <button
+                        className="btn btn-sm btn-warning me-2"
+                        onClick={() => handleOpenModal(category, values)}
+                        disabled={loadingAction}
+                      >
+                        {loadingAction ? "Saving..." : "Edit"}
+                      </button>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleRemoveRestriction(category)}
+                        disabled={loadingAction}
+                      >
+                        {loadingAction ? "Removing..." : "Remove"}
+                      </button>
+                    </div>
+                  </li>
+                )
+              )}
+            </ul>
+          )}
+          <button
+            className="btn btn-primary mt-3"
+            onClick={() => handleOpenModal()}
+          >
+            Add Restriction
+          </button>
+        </div>
+      )}
+
+      <Modal show={showModal} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
             {editingRestriction ? "Edit Restriction" : "Add Restriction"}
@@ -224,9 +224,11 @@ const AdminRestrictions = () => {
         </Modal.Header>
         <Modal.Body>
           <div className="mb-3">
-            <label className="form-label">Restriction Category</label>
+            <label htmlFor="category" className="form-label">
+              Restriction Category
+            </label>
             <Select
-              options={availableCategories.map((cat) => ({
+              options={Object.keys(partOptions).map((cat) => ({
                 value: cat,
                 label: cat,
               }))}
@@ -249,7 +251,9 @@ const AdminRestrictions = () => {
             />
           </div>
           <div className="mb-3">
-            <label className="form-label">Restricted Values</label>
+            <label htmlFor="values" className="form-label">
+              Restricted Values
+            </label>
             <Select
               options={(partOptions[newRestriction.category] || []).map(
                 (opt) => ({ value: opt.value, label: opt.value })
@@ -271,7 +275,7 @@ const AdminRestrictions = () => {
             Close
           </Button>
           <Button variant="primary" onClick={handleSaveRestriction}>
-            {editingRestriction ? "Update Restriction" : "Add Restriction"}
+            Save
           </Button>
         </Modal.Footer>
       </Modal>

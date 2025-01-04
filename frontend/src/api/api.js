@@ -11,9 +11,9 @@ export const getBicycleById = async (id) => {
 export const getCart = async (cartId) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/cart`, {
-      params: { cartId }, // Pass cartId as a query parameter
+      params: { cartId },
     });
-    return response.data; // Return cart data
+    return response.data;
   } catch (error) {
     console.error(
       "Error fetching cart:",
@@ -27,7 +27,7 @@ export const getCart = async (cartId) => {
 export const addToCart = async (payload) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/cart`, payload);
-    return response.data; // Return the updated cart or cartId
+    return response.data;
   } catch (error) {
     console.error(
       "Error adding to cart:",
@@ -39,12 +39,9 @@ export const addToCart = async (payload) => {
 
 // Remove an item from the cart
 export const removeFromCart = async (cartId, itemId) => {
-  console.log("API URL:", `${API_BASE_URL}/cart/${itemId}`);
-  console.log("Payload (cartId):", { cartId });
-
   try {
     const response = await axios.delete(`${API_BASE_URL}/cart/${itemId}`, {
-      data: { cartId }, // Ensure `cartId` is being passed in the body
+      data: { cartId },
     });
     return response.data;
   } catch (error) {
@@ -63,7 +60,7 @@ export const updateCartItem = async (cartId, itemId, data) => {
       `${API_BASE_URL}/cart/${itemId}?cartId=${cartId}`,
       data
     );
-    return response.data; // Return updated cart
+    return response.data;
   } catch (error) {
     console.error(
       "Error updating cart item:",
@@ -145,24 +142,7 @@ export const createPartOption = async (partOptionData) => {
   }
 };
 
-// Add a new part option with allowed parts
-export const addPartOption = async (partOptionData) => {
-  try {
-    const response = await axios.post(
-      `${API_BASE_URL}/part-options`,
-      partOptionData
-    );
-    return response.data;
-  } catch (error) {
-    console.error(
-      "Error adding part option:",
-      error.response?.data || error.message
-    );
-    throw error;
-  }
-};
-
-// Update Part Option
+// Update Part Option (category, value, stock)
 export const updatePartOption = async (optionId, updatedData) => {
   try {
     const response = await axios.put(
@@ -176,17 +156,17 @@ export const updatePartOption = async (optionId, updatedData) => {
   }
 };
 
-// Update allowed parts for a part option
-export const updateAllowedParts = async (id, allowedParts) => {
+// Update restrictions
+export const updateRestrictions = async (id, restrictions) => {
   try {
     const response = await axios.patch(
-      `${API_BASE_URL}/part-options/${id}/allowed-parts`,
-      { allowedParts }
+      `${API_BASE_URL}/part-options/${id}/restrictions`,
+      { restrictions }
     );
     return response.data;
   } catch (error) {
     console.error(
-      "Error updating allowed parts:",
+      "Error updating restrictions:",
       error.response?.data || error.message
     );
     throw error;

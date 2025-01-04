@@ -4,7 +4,7 @@ const partOptionSchema = new mongoose.Schema({
   category: { type: String, required: true },
   value: { type: String, required: true },
   stock: { type: String, required: true, enum: ["in_stock", "out_of_stock"] },
-  allowedParts: {
+  restrictions: {
     type: Map,
     of: [String],
   },

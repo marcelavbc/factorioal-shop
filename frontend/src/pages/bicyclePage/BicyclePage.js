@@ -47,7 +47,7 @@ const BicyclePage = () => {
     }
   };
 
-  // Check if all required selections are made
+  // ✅ **Ensure all required selections are made**
   const isFormValid = () => {
     return (
       quantity !== "" &&
@@ -58,6 +58,7 @@ const BicyclePage = () => {
     );
   };
 
+  // ✅ **Add to Cart with Valid Selections**
   const handleAddToCart = async () => {
     let cartId = localStorage.getItem("cartId");
 
@@ -72,7 +73,6 @@ const BicyclePage = () => {
         quantity: parseInt(quantity, 10),
       };
 
-      // Fetch the current cart to check for duplicates
       let currentCart = cartId ? await getCart(cartId) : { items: [] };
 
       const existingItem = currentCart.items.find((item) => {
@@ -87,15 +87,12 @@ const BicyclePage = () => {
       });
 
       if (existingItem) {
-        // Update quantity instead of adding a duplicate
         const updatedQuantity = existingItem.quantity + parseInt(quantity, 10);
         await updateCartItem(cartId, existingItem._id, {
           quantity: updatedQuantity,
         });
-
         toast.success(`Updated quantity to ${updatedQuantity}!`);
       } else {
-        // Add new item to cart
         const response = await addToCart(payload);
         if (!cartId && response.cartId) {
           localStorage.setItem("cartId", response.cartId);
@@ -103,7 +100,6 @@ const BicyclePage = () => {
         toast.success("Bicycle added to cart!");
       }
 
-      // Fetch updated cart and update state
       let updatedCart = await getCart(cartId);
       setCartItems(
         updatedCart.items.reduce((sum, item) => sum + item.quantity, 0)
@@ -115,7 +111,8 @@ const BicyclePage = () => {
     }
   };
 
-  const handleAllowedParts = (category, selectedValue) => {
+  // ✅ **Handle Restrictions (Previously handleAllowedParts)**
+  const handleRestrictions = (category, selectedValue) => {
     setCustomization((prevCustomization) => {
       const newCustomization = {
         ...prevCustomization,
@@ -126,35 +123,32 @@ const BicyclePage = () => {
         .find((opt) => opt.category === category)
         ?.values.find((val) => val.value === selectedValue);
 
-      if (!selectedOption?.allowedParts) return newCustomization;
+      if (!selectedOption?.restrictions) return newCustomization;
 
-      let restrictedCategories = new Set();
+      let invalidSelections = [];
 
-      Object.entries(selectedOption.allowedParts).forEach(
-        ([allowedCategory, allowedValues]) => {
-          if (!allowedValues.includes(newCustomization[allowedCategory])) {
-            if (newCustomization[allowedCategory]) {
-              restrictedCategories.add(
-                `Your selection of "${selectedValue}" restricts "${allowedCategory}" to: ${allowedValues.join(
-                  ", "
-                )}. Resetting option.`
-              );
-            }
-            newCustomization[allowedCategory] = "";
+      Object.entries(selectedOption.restrictions).forEach(
+        ([restrictedCategory, restrictedValues]) => {
+          if (restrictedValues.includes(newCustomization[restrictedCategory])) {
+            invalidSelections.push(
+              `🚫 Restriction: "${selectedValue}" does NOT allow "${restrictedCategory}" to be "${newCustomization[restrictedCategory]}".`
+            );
+            newCustomization[restrictedCategory] = "";
           }
         }
       );
 
-      restrictedCategories.forEach((msg) => toast.info(msg));
+      invalidSelections.forEach((msg) => toast.error(msg));
 
       return newCustomization;
     });
   };
 
+  // ✅ **Render Options with Restrictions**
   const renderOptions = (category, values) => {
     if (!values || values.length === 0) return null;
 
-    let allowedValues = values.map((opt) => opt.value);
+    let validValues = values.map((opt) => opt.value);
 
     Object.entries(customization).forEach(
       ([selectedCategory, selectedValue]) => {
@@ -162,14 +156,16 @@ const BicyclePage = () => {
           .find((opt) => opt.category === selectedCategory)
           ?.values.find((val) => val.value === selectedValue);
 
-        if (selectedOption?.allowedParts?.[category]) {
-          allowedValues = selectedOption.allowedParts[category];
+        if (selectedOption?.restrictions?.[category]) {
+          validValues = validValues.filter(
+            (val) => !selectedOption.restrictions[category].includes(val)
+          );
         }
       }
     );
 
     const options = values
-      .filter((option) => allowedValues.includes(option.value))
+      .filter((option) => validValues.includes(option.value))
       .map((option) => ({
         value: option.value,
         label:
@@ -185,7 +181,7 @@ const BicyclePage = () => {
         <Select
           options={options}
           onChange={(selectedOption) =>
-            handleAllowedParts(category, selectedOption.value)
+            handleRestrictions(category, selectedOption.value)
           }
           value={
             options.find((opt) => opt.value === customization[category]) || null

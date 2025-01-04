@@ -5,7 +5,7 @@ const {
   getPartOptions,
   deletePartOption,
   updatePartOption,
-  updateAllowedParts,
+  updateRestrictions,
 } = require("../controllers/partOption.controller");
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.delete("/:id", removeOption);
 router.put("/:id", updatePartOption);
 
 // Update compatibility rules
-router.patch("/:id/allowed-parts", updateAllowedParts);
+router.patch("/:id/restrictions", updateRestrictions);
 
 // Fetch all part options
 router.get("/", getPartOptions);

@@ -1,16 +1,15 @@
 const PartOption = require("../models/partOption.model");
-const Bicycle = require("../models/bicycle.model");
 
-// Add a new part option with allowedParts
+// Add a new part option with restrictions
 exports.addOption = async (req, res) => {
   try {
-    const { category, value, stock, allowedParts } = req.body;
+    const { category, value, stock, restrictions } = req.body;
 
     const newOption = new PartOption({
       category,
       value,
       stock: stock || "in_stock",
-      allowedParts: allowedParts || {},
+      restrictions: restrictions || {},
     });
 
     const savedOption = await newOption.save();
@@ -44,7 +43,7 @@ exports.removeOption = async (req, res) => {
   }
 };
 
-// Update a part option (category, value, or stock)
+// Update a part option
 exports.updatePartOption = async (req, res) => {
   try {
     const { id } = req.params;
@@ -55,7 +54,6 @@ exports.updatePartOption = async (req, res) => {
       return res.status(404).json({ message: "Part option not found" });
     }
 
-    // ✅ Update only the fields that were sent in the request
     if (category !== undefined) option.category = category;
     if (value !== undefined) option.value = value;
     if (stock !== undefined) option.stock = stock;
@@ -71,26 +69,29 @@ exports.updatePartOption = async (req, res) => {
   }
 };
 
-// Update Allowed Parts
-exports.updateAllowedParts = async (req, res) => {
+// ✅ Update Restrictions
+exports.updateRestrictions = async (req, res) => {
   try {
     const { id } = req.params;
-    const { allowedParts } = req.body;
+    const { restrictions } = req.body;
 
     const option = await PartOption.findById(id);
     if (!option) {
       return res.status(404).json({ message: "Part option not found" });
     }
 
-    option.allowedParts = allowedParts;
+    option.restrictions = restrictions;
     const updatedOption = await option.save();
 
-    res.status(200).json(updatedOption);
+    res.status(200).json({
+      message: "Restrictions updated successfully",
+      updatedOption,
+    });
   } catch (err) {
-    console.error("Error updating allowed parts:", err);
+    console.error("Error updating restrictions:", err);
     res
       .status(500)
-      .json({ message: "Failed to update allowed parts", error: err.message });
+      .json({ message: "Failed to update restrictions", error: err.message });
   }
 };
 

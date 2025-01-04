@@ -14,7 +14,7 @@ exports.getBicycles = async (req, res) => {
   }
 };
 
-// Create a new bicycle
+// Create a new bicycle (with restriction validation)
 exports.createBicycle = async (req, res) => {
   try {
     const { name, description, price, image, partOptions } = req.body;
@@ -27,6 +27,29 @@ exports.createBicycle = async (req, res) => {
       return res.status(400).json({ message: "Some part options are invalid" });
     }
 
+    // 🔥 Check for **restriction violations**
+    for (const option of detailedOptions) {
+      if (option.restrictions) {
+        for (const [restrictedCategory, restrictedValues] of Object.entries(
+          option.restrictions
+        )) {
+          const selectedOption = detailedOptions.find(
+            (opt) => opt.category === restrictedCategory
+          );
+
+          if (
+            selectedOption &&
+            restrictedValues.includes(selectedOption.value)
+          ) {
+            return res.status(400).json({
+              message: `🚫 "${option.value}" in ${option.category} is NOT compatible with "${selectedOption.value}" in ${restrictedCategory}.`,
+            });
+          }
+        }
+      }
+    }
+
+    // ✅ Format part options for bicycle schema
     const formattedOptions = detailedOptions.map((option) => ({
       category: option.category,
       values: [{ value: option.value, stock: option.stock }],
@@ -51,7 +74,7 @@ exports.createBicycle = async (req, res) => {
   }
 };
 
-// Get a bicycle by ID (With Allowed Parts)
+// Get a bicycle by ID (Ensuring Restrictions Are Present)
 exports.getBicycleById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -66,18 +89,28 @@ exports.getBicycleById = async (req, res) => {
       return res.status(404).json({ message: "Bicycle not found" });
     }
 
-    // Group part options by category
+    // ✅ Group part options correctly
     const groupedOptions = bicycle.partOptions.reduce((acc, part) => {
       const existingCategory = acc.find(
         (opt) => opt.category === part.category
       );
 
       if (existingCategory) {
-        existingCategory.values.push({ value: part.value, stock: part.stock });
+        existingCategory.values.push({
+          value: part.value,
+          stock: part.stock,
+          restrictions: part.restrictions, // 🔥 Keep restrictions for frontend
+        });
       } else {
         acc.push({
           category: part.category,
-          values: [{ value: part.value, stock: part.stock }],
+          values: [
+            {
+              value: part.value,
+              stock: part.stock,
+              restrictions: part.restrictions,
+            },
+          ],
         });
       }
 
@@ -116,7 +149,7 @@ exports.deleteBicycle = async (req, res) => {
   }
 };
 
-// Update an existing bicycle
+// Update an existing bicycle (with restriction validation)
 exports.updateBicycle = async (req, res) => {
   try {
     const { id } = req.params;
@@ -127,7 +160,7 @@ exports.updateBicycle = async (req, res) => {
 
     const { name, description, price, image, partOptions } = req.body;
 
-    // Ensure part options exist before updating
+    // ✅ Ensure part options exist before updating
     const detailedOptions = await PartOption.find({
       _id: { $in: partOptions },
     });
@@ -136,7 +169,29 @@ exports.updateBicycle = async (req, res) => {
       return res.status(400).json({ message: "Some part options are invalid" });
     }
 
-    // Format part options
+    // 🔥 Check for **restriction violations**
+    for (const option of detailedOptions) {
+      if (option.restrictions) {
+        for (const [restrictedCategory, restrictedValues] of Object.entries(
+          option.restrictions
+        )) {
+          const selectedOption = detailedOptions.find(
+            (opt) => opt.category === restrictedCategory
+          );
+
+          if (
+            selectedOption &&
+            restrictedValues.includes(selectedOption.value)
+          ) {
+            return res.status(400).json({
+              message: `🚫 "${option.value}" in ${option.category} is NOT compatible with "${selectedOption.value}" in ${restrictedCategory}.`,
+            });
+          }
+        }
+      }
+    }
+
+    // ✅ Format part options
     const formattedOptions = detailedOptions.map((option) => ({
       category: option.category,
       values: [{ value: option.value, stock: option.stock }],

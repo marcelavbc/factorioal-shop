@@ -13,32 +13,34 @@ const validateCartItem = async (req, res, next) => {
 
       if (!partOption) {
         return res.status(400).json({
-          message: `Invalid option: ${option.category} - ${option.value}`,
+          message: `Invalid selection: "${option.value}" is not a valid option for ${option.category}.`,
         });
       }
 
       if (partOption.stock === "out_of_stock") {
         return res.status(400).json({
-          message: `${option.category} option "${option.value}" is out of stock.`,
+          message: `Oops! "${option.value}" in ${option.category} is out of stock. Please choose another option.`,
         });
       }
 
-      // 🔥 Check for allowedParts
-      if (partOption.allowedParts) {
-        for (const [allowedCategory, allowedValues] of Object.entries(
-          partOption.allowedParts
+      // 🔥 Check for **actual** restrictions
+      if (
+        partOption.restrictions &&
+        Object.keys(partOption.restrictions).length > 0
+      ) {
+        for (const [restrictedCategory, restrictedValues] of Object.entries(
+          partOption.restrictions
         )) {
           const selectedOption = options.find(
-            (opt) => opt.category === allowedCategory
+            (opt) => opt.category === restrictedCategory
           );
 
-          if (selectedOption && !allowedValues.includes(selectedOption.value)) {
+          if (
+            selectedOption &&
+            restrictedValues.includes(selectedOption.value)
+          ) {
             return res.status(400).json({
-              message: `Incompatible selection: ${option.category} "${
-                option.value
-              }" only allows ${allowedCategory} options: ${allowedValues.join(
-                ", "
-              )}. Your selection of "${selectedOption.value}" is not valid.`,
+              message: `🚫 "${option.value}" in ${option.category} is NOT compatible with "${selectedOption.value}" in ${restrictedCategory}. Please select a different ${restrictedCategory}.`,
             });
           }
         }
