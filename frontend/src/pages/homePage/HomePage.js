@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import "./homePage.scss"; // ✅ Import SCSS file
+import "./homePage.scss";
 
 import LoadingSpinner from "../../components/shared/loadingSpinner/LoadingSpinner";
 import ErrorMessage from "../../components/shared/error/ErrorMessage";

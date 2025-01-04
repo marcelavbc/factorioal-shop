@@ -6,6 +6,8 @@ import Select from "react-select";
 import { addToCart, getBicycleById } from "../../api/api";
 import LoadingSpinner from "../../components/shared/loadingSpinner/LoadingSpinner";
 import ErrorMessage from "../../components/shared/error/ErrorMessage";
+import { useCart } from "../../context/CartContext"; // ✅ Import Cart Context
+
 import "./bicyclePage.scss";
 
 const BicyclePage = () => {
@@ -16,6 +18,7 @@ const BicyclePage = () => {
   const [quantity, setQuantity] = useState("1");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { setCartItems } = useCart(); // ✅ Use Context
 
   useEffect(() => {
     const fetchBicycle = async () => {
@@ -52,13 +55,6 @@ const BicyclePage = () => {
   const handleAddToCart = async () => {
     let cartId = localStorage.getItem("cartId");
 
-    if (!isFormValid()) {
-      toast.error(
-        "Please select all customization options and set a valid quantity."
-      );
-      return;
-    }
-
     try {
       const payload = {
         cartId: cartId || undefined,
@@ -75,6 +71,9 @@ const BicyclePage = () => {
       if (!cartId && response.cartId) {
         localStorage.setItem("cartId", response.cartId);
       }
+
+      // ✅ Update Cart Count Immediately
+      setCartItems((prev) => prev + parseInt(quantity, 10));
 
       toast.success("Bicycle added to cart!");
       navigate("/cart");
@@ -96,12 +95,13 @@ const BicyclePage = () => {
 
       if (!selectedOption?.allowedParts) return newCustomization;
 
+      let restrictedCategories = new Set();
+
       Object.entries(selectedOption.allowedParts).forEach(
         ([allowedCategory, allowedValues]) => {
           if (!allowedValues.includes(newCustomization[allowedCategory])) {
-            // 🚨 If the selected value is not allowed, reset the option
             if (newCustomization[allowedCategory]) {
-              toast.info(
+              restrictedCategories.add(
                 `Your selection of "${selectedValue}" restricts "${allowedCategory}" to: ${allowedValues.join(
                   ", "
                 )}. Resetting option.`
@@ -111,6 +111,8 @@ const BicyclePage = () => {
           }
         }
       );
+
+      restrictedCategories.forEach((msg) => toast.info(msg));
 
       return newCustomization;
     });

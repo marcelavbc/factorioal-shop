@@ -2,10 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getCart, removeFromCart, updateCartItem } from "../../api/api";
+import { useCart } from "../../context/CartContext";
 import LoadingSpinner from "../../components/shared/loadingSpinner/LoadingSpinner";
 import ErrorMessage from "../../components/shared/error/ErrorMessage";
 import "./cartPage.scss";
+
 const CartPage = () => {
+  const { setCartItems } = useCart();
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,8 +35,10 @@ const CartPage = () => {
         setEditingQuantities(initialQuantities);
 
         if (data.cartId) {
-          localStorage.setItem("cartId", data.cartId); // Sync localStorage
+          localStorage.setItem("cartId", data.cartId);
         }
+
+        setCartItems(data.items.length);
       } catch (err) {
         setError("Failed to load cart data.");
       } finally {
@@ -42,21 +47,23 @@ const CartPage = () => {
     };
 
     fetchCart();
-  }, []);
+  }, [setCartItems]);
 
   const handleRemoveItem = async (itemId) => {
     try {
       const cartId = localStorage.getItem("cartId");
       const updatedCart = await removeFromCart(cartId, itemId);
+
       toast.success("Item removed from cart!");
       setCart(updatedCart);
+
+      setCartItems(updatedCart.items.length);
     } catch (err) {
       toast.error("Failed to remove item from cart.");
     }
   };
 
   const handleQuantityChange = (itemId, value) => {
-    // ✅ Allow empty value & positive integers
     if (value === "" || /^[1-9]\d*$/.test(value)) {
       setEditingQuantities((prev) => ({
         ...prev,
@@ -79,6 +86,9 @@ const CartPage = () => {
         quantity: parseInt(newQuantity, 10),
       });
       setCart(updatedCart);
+
+      setCartItems(updatedCart.items.length);
+
       toast.success("Quantity updated!");
     } catch (err) {
       toast.error("Failed to update quantity.");
@@ -125,8 +135,11 @@ const CartPage = () => {
                   <strong>Price:</strong> ${item.bicycle.price}
                 </p>
                 <div className="d-flex align-items-center mt-2">
-                  <label className="me-2">Quantity:</label>
+                  <label htmlFor={`quantity-${item._id}`} className="me-2">
+                    Quantity:
+                  </label>
                   <input
+                    id={`quantity-${item._id}`}
                     type="text"
                     value={editingQuantities[item._id] || ""}
                     onChange={(e) =>
@@ -137,7 +150,10 @@ const CartPage = () => {
                   <button
                     className="btn btn-secondary"
                     onClick={() => handleSaveQuantity(item._id)}
-                    disabled={!editingQuantities[item._id]} // ✅ Disable if empty
+                    disabled={
+                      !editingQuantities[item._id] ||
+                      editingQuantities[item._id] === item.quantity
+                    }
                   >
                     Save
                   </button>
