@@ -9,14 +9,16 @@ import {
 import LoadingSpinner from "../../../components/shared/loadingSpinner/LoadingSpinner";
 import ErrorMessage from "../../../components/shared/error/ErrorMessage";
 import { toast } from "react-toastify";
+import { Modal, Button } from "react-bootstrap";
 import "./adminParts.scss";
 
 const AdminParts = () => {
   const [partOptions, setPartOptions] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [newOption, setNewOption] = useState({
-    category: "",
     value: "",
     stock: "in_stock",
   });
@@ -26,7 +28,6 @@ const AdminParts = () => {
       try {
         const data = await getPartOptions();
 
-        // Group part options by category
         const groupedOptions = data.reduce((acc, option) => {
           acc[option.category] = acc[option.category] || [];
           acc[option.category].push(option);
@@ -47,8 +48,31 @@ const AdminParts = () => {
 
   const handleAddOption = async (e) => {
     e.preventDefault();
+
+    const { value, stock } = newOption;
+
+    if (!value.trim()) {
+      toast.error("Please enter a valid value.");
+      return;
+    }
+
+    if (
+      partOptions[selectedCategory] &&
+      partOptions[selectedCategory].some(
+        (option) => option.value.toLowerCase() === value.toLowerCase()
+      )
+    ) {
+      toast.error(
+        `"${value}" already exists in ${selectedCategory}. Choose a different value.`
+      );
+      return;
+    }
+
     try {
-      const addedOption = await createPartOption(newOption);
+      const addedOption = await createPartOption({
+        category: selectedCategory,
+        stock,
+      });
 
       setPartOptions((prev) => ({
         ...prev,
@@ -58,8 +82,9 @@ const AdminParts = () => {
         ],
       }));
 
-      setNewOption({ category: "", value: "", stock: "in_stock" });
-      toast.success("Part option added successfully!");
+      setNewOption({ value: "", stock: "in_stock" });
+      setShowModal(false);
+      toast.success(`Added "${addedOption.value}" to ${selectedCategory}!`);
     } catch (err) {
       console.error("Failed to add part option:", err);
       toast.error("Failed to add part option.");
@@ -113,75 +138,6 @@ const AdminParts = () => {
   return (
     <div className="container my-4">
       <h1>Manage Part Options</h1>
-
-      {/* ✅ Add New Part Option */}
-      <div className="mb-4">
-        <h3>Add New Part Option</h3>
-        <form onSubmit={handleAddOption}>
-          <div className="mb-3">
-            <label className="form-label">Category</label>
-            <Select
-              inputId="category-select"
-              value={
-                newOption.category
-                  ? { value: newOption.category, label: newOption.category }
-                  : null
-              }
-              onChange={(selected) =>
-                setNewOption((prev) => ({
-                  ...prev,
-                  category: selected?.value || "",
-                }))
-              }
-              options={Object.keys(partOptions).map((category) => ({
-                value: category,
-                label: category,
-              }))}
-              isSearchable
-              placeholder="Select category or type new..."
-              className="react-select-container"
-              classNamePrefix="react-select"
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Value</label>
-            <input
-              type="text"
-              value={newOption.value}
-              onChange={(e) =>
-                setNewOption((prev) => ({ ...prev, value: e.target.value }))
-              }
-              className="form-control"
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Stock Status</label>
-            <Select
-              value={{
-                value: newOption.stock,
-                label:
-                  newOption.stock === "in_stock" ? "In Stock" : "Out of Stock",
-              }}
-              onChange={(selected) =>
-                setNewOption((prev) => ({ ...prev, stock: selected.value }))
-              }
-              options={[
-                { value: "in_stock", label: "In Stock" },
-                { value: "out_of_stock", label: "Out of Stock" },
-              ]}
-              isSearchable={false}
-              className="react-select-container"
-              classNamePrefix="react-select"
-            />
-          </div>
-          <button type="submit" className="btn btn-primary">
-            Add Part Option
-          </button>
-        </form>
-      </div>
-
-      {/* ✅ Grouped Existing Part Options */}
       <div>
         <h3>Existing Part Options</h3>
         {Object.keys(partOptions).length === 0 ? (
@@ -189,7 +145,18 @@ const AdminParts = () => {
         ) : (
           Object.entries(partOptions).map(([category, options]) => (
             <div key={category} className="part-options-group">
-              <h5 className="category-title">{category}</h5>
+              <div className="d-flex justify-content-between align-items-center">
+                <h5 className="category-title">{category}</h5>
+                <button
+                  className="btn btn-sm btn-success"
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    setShowModal(true);
+                  }}
+                >
+                  + Add {category}
+                </button>
+              </div>
               <ul className="list-group">
                 {options.map((option) => (
                   <li
@@ -226,6 +193,65 @@ const AdminParts = () => {
           ))
         )}
       </div>
+
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        size="md"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Add New {selectedCategory}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <form onSubmit={handleAddOption}>
+            <div className="mb-3">
+              <label htmlFor="value" className="form-label">
+                Value
+              </label>
+              <input
+                type="text"
+                value={newOption.value}
+                onChange={(e) =>
+                  setNewOption((prev) => ({ ...prev, value: e.target.value }))
+                }
+                className="form-control"
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="stock" className="form-label">
+                Stock Status
+              </label>
+              <Select
+                value={{
+                  value: newOption.stock,
+                  label:
+                    newOption.stock === "in_stock"
+                      ? "In Stock"
+                      : "Out of Stock",
+                }}
+                onChange={(selected) =>
+                  setNewOption((prev) => ({ ...prev, stock: selected.value }))
+                }
+                options={[
+                  { value: "in_stock", label: "In Stock" },
+                  { value: "out_of_stock", label: "Out of Stock" },
+                ]}
+                isSearchable={false}
+                className="react-select-container"
+                classNamePrefix="react-select"
+              />
+            </div>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" className="ms-2">
+              Add {selectedCategory}
+            </Button>
+          </form>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

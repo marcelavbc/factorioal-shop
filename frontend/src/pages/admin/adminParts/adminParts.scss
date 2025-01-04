@@ -3,16 +3,38 @@
   padding: 15px;
   background: #f8f9fa;
   border-radius: 8px;
+  border: 1px solid #ddd;
 
-  .category-title {
-    font-weight: bold;
-    font-size: 1.2rem;
+  .category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 12px;
-    color: #343a40;
+
+    .category-title {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #343a40;
+    }
+
+    .add-button {
+      background: #28a745;
+      color: white;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+
+      &:hover {
+        background: #218838;
+      }
+    }
   }
 
   .list-group {
-    padding-left: 0; // Removes default padding for better alignment
+    padding-left: 0;
   }
 
   .list-group-item {
@@ -33,17 +55,9 @@
       flex-grow: 1;
     }
 
-    .stock-status {
-      font-weight: bold;
-      color: #28a745; // Green for "In Stock"
-
-      &.out-of-stock {
-        color: #dc3545; // Red for "Out of Stock"
-      }
-    }
     .btn-group {
       display: flex;
-      gap: 5px;
+      gap: 8px;
     }
 
     .stock-toggle-btn {
@@ -55,7 +69,7 @@
       transition: all 0.2s ease-in-out;
 
       &.in-stock {
-        background: #ffc107; // Yellow when item is "In Stock"
+        background: #ffc107;
         color: #343a40;
 
         &:hover {
@@ -64,7 +78,7 @@
       }
 
       &.out-of-stock {
-        background: #17a2b8; // Teal when item is "Out of Stock"
+        background: #17a2b8;
         color: white;
 
         &:hover {
@@ -72,10 +86,29 @@
         }
       }
     }
+
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+
+      &:hover {
+        background: #c82333;
+      }
+    }
   }
 }
 
-// 🚀 Enhancing the Select Component Styling
+.custom-modal-size {
+  max-width: 600px;
+  width: 100%;
+}
+
 .react-select-container {
   width: 100%;
   font-size: 16px;

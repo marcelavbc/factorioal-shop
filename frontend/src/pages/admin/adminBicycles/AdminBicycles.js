@@ -324,9 +324,7 @@ const AdminBicycles = () => {
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="part-options" className="form-label">
-              Part Options
-            </label>
+            <h4 className="form-label">Part Options</h4>
             <div className="part-options-container">
               {Object.entries(partOptions).map(([category, options]) => (
                 <div key={category} className="part-options-group">
