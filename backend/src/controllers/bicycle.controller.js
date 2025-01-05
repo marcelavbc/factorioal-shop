@@ -27,7 +27,7 @@ exports.createBicycle = async (req, res) => {
       return res.status(400).json({ message: "Some part options are invalid" });
     }
 
-    // 🔥 Check for **restriction violations**
+    // Check for **restriction violations**
     for (const option of detailedOptions) {
       if (option.restrictions) {
         for (const [restrictedCategory, restrictedValues] of Object.entries(
@@ -49,7 +49,7 @@ exports.createBicycle = async (req, res) => {
       }
     }
 
-    // ✅ Format part options for bicycle schema
+    // Format part options for bicycle schema
     const formattedOptions = detailedOptions.map((option) => ({
       category: option.category,
       values: [{ value: option.value, stock: option.stock }],
@@ -74,7 +74,7 @@ exports.createBicycle = async (req, res) => {
   }
 };
 
-// Get a bicycle by ID (Ensuring Restrictions Are Present)
+// Get a bicycle by ID
 exports.getBicycleById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -99,7 +99,7 @@ exports.getBicycleById = async (req, res) => {
         existingCategory.values.push({
           value: part.value,
           stock: part.stock,
-          restrictions: part.restrictions, // 🔥 Keep restrictions for frontend
+          restrictions: part.restrictions,
         });
       } else {
         acc.push({
@@ -160,7 +160,6 @@ exports.updateBicycle = async (req, res) => {
 
     const { name, description, price, image, partOptions } = req.body;
 
-    // ✅ Ensure part options exist before updating
     const detailedOptions = await PartOption.find({
       _id: { $in: partOptions },
     });
@@ -169,7 +168,6 @@ exports.updateBicycle = async (req, res) => {
       return res.status(400).json({ message: "Some part options are invalid" });
     }
 
-    // 🔥 Check for **restriction violations**
     for (const option of detailedOptions) {
       if (option.restrictions) {
         for (const [restrictedCategory, restrictedValues] of Object.entries(
@@ -191,7 +189,7 @@ exports.updateBicycle = async (req, res) => {
       }
     }
 
-    // ✅ Format part options
+    // Format part options
     const formattedOptions = detailedOptions.map((option) => ({
       category: option.category,
       values: [{ value: option.value, stock: option.stock }],

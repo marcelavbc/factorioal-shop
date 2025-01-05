@@ -1,9 +1,16 @@
 const PartOption = require("../models/partOption.model");
+const mongoose = require("mongoose");
 
 // Add a new part option with restrictions
 exports.addOption = async (req, res) => {
   try {
     const { category, value, stock, restrictions } = req.body;
+
+    // 🔥 Check if part option already exists
+    const existingOption = await PartOption.findOne({ category, value });
+    if (existingOption) {
+      return res.status(400).json({ message: "Part option already exists" });
+    }
 
     const newOption = new PartOption({
       category,
@@ -16,9 +23,18 @@ exports.addOption = async (req, res) => {
     res.status(201).json(savedOption);
   } catch (err) {
     console.error("Error adding part option:", err);
-    res
-      .status(500)
-      .json({ message: "Failed to add part option", error: err.message });
+
+    if (err.name === "ValidationError") {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: err.errors,
+      });
+    }
+
+    res.status(500).json({
+      message: "Failed to add part option",
+      error: err.message,
+    });
   }
 };
 
@@ -44,14 +60,28 @@ exports.removeOption = async (req, res) => {
 };
 
 // Update a part option
+
 exports.updatePartOption = async (req, res) => {
   try {
     const { id } = req.params;
     const { category, value, stock } = req.body;
 
+    // 🔥 Check if `id` is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid part option ID" });
+    }
+
     const option = await PartOption.findById(id);
     if (!option) {
       return res.status(404).json({ message: "Part option not found" });
+    }
+
+    // 🔥 Validate fields BEFORE updating
+    if (
+      (category !== undefined && category.trim() === "") ||
+      (value !== undefined && value.trim() === "")
+    ) {
+      return res.status(400).json({ message: "Invalid update fields" });
     }
 
     if (category !== undefined) option.category = category;
@@ -109,18 +139,27 @@ exports.getPartOptions = async (req, res) => {
 };
 
 // Delete a part option by ID
+
 exports.deletePartOption = async (req, res) => {
   const { id } = req.params;
+
   try {
+    // 🔥 Validate ObjectId format before querying
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid part option ID" });
+    }
+
     const deletedOption = await PartOption.findByIdAndDelete(id);
     if (!deletedOption) {
       return res.status(404).json({ message: "Part option not found" });
     }
+
     res.status(200).json({ message: "Part option deleted successfully" });
   } catch (err) {
     console.error("Error deleting part option:", err);
-    res
-      .status(500)
-      .json({ message: "Failed to delete part option", error: err.message });
+    res.status(500).json({
+      message: "Failed to delete part option",
+      error: err.message,
+    });
   }
 };

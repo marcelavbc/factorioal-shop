@@ -4,6 +4,19 @@ const validateCartItem = async (req, res, next) => {
   const { options } = req.body;
 
   try {
+    // 🔥 Ensure `options` field exists
+    if (!options) {
+      return res
+        .status(400)
+        .json({ message: "Invalid request: options field is required." });
+    }
+
+    if (!Array.isArray(options) || options.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Invalid request: options cannot be empty." });
+    }
+
     for (const option of options) {
       // Find the selected option in the database
       const partOption = await PartOption.findOne({

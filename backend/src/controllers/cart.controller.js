@@ -102,6 +102,7 @@ exports.removeFromCart = async (req, res) => {
       path: "items.bicycle",
       select: "name price image",
     });
+
     res.status(200).json(updatedCart);
   } catch (err) {
     console.error("Error removing from cart:", err);
@@ -114,7 +115,7 @@ exports.removeFromCart = async (req, res) => {
 // Update a cart item
 exports.updateCartItem = async (req, res) => {
   const { cartId } = req.query; // Expect `cartId` from the query params
-  const { id: itemId } = req.params; // Item to update
+  const { id: itemId } = req.params;
   const { quantity } = req.body;
 
   if (!cartId) {
