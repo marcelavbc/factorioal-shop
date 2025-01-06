@@ -77,7 +77,6 @@ const seedDatabase = async () => {
         stock: "in_stock",
         restrictions: { "Rim Color": ["Red"] },
       },
-
       {
         category: "Rim Color",
         value: "Red",
