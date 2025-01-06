@@ -1,5 +1,3 @@
-// src/components/loadingSpinner/LoadingSpinner.js
-
 import React from "react";
 
 const LoadingSpinner = () => {

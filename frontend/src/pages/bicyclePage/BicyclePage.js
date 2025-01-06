@@ -30,6 +30,8 @@ const BicyclePage = () => {
     const fetchBicycle = async () => {
       try {
         const data = await getBicycleById(id);
+        // console.log("🚀 Fetched bicycle data:", data); // ⬅️ Add this debug log
+
         setBicycle(data);
       } catch (err) {
         setError("Failed to load bicycle details.");
@@ -177,8 +179,10 @@ const BicyclePage = () => {
 
     return (
       <div key={category} className="option-group">
-        <label>{category}:</label>
+        <label id={`label-${category.replace(/\s+/g, "-")}`}>{category}:</label>
         <Select
+          inputId={`select-${category.replace(/\s+/g, "-")}`} // ✅ Assign ID for accessibility
+          aria-labelledby={`label-${category.replace(/\s+/g, "-")}`} // ✅ Link label and input
           options={options}
           onChange={(selectedOption) =>
             handleRestrictions(category, selectedOption.value)

@@ -11,7 +11,7 @@ const Layout = () => {
   useEffect(() => {
     const updateCartCount = async () => {
       const cartId = localStorage.getItem("cartId");
-      if (!cartId) return;
+      if (!cartId || cartId === "null") return;
 
       const cart = await getCart(cartId);
       const totalQuantity = cart.items.reduce(

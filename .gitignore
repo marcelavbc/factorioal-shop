@@ -7,3 +7,6 @@ node_modules/
 # Build outputs
 backend/dist/
 frontend/build/
+
+# Test coverage
+coverage/

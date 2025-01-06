@@ -9,8 +9,9 @@ import {
 import LoadingSpinner from "../../../components/shared/loadingSpinner/LoadingSpinner";
 import ErrorMessage from "../../../components/shared/error/ErrorMessage";
 import { toast } from "react-toastify";
-import { Modal, Button } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import "./adminParts.scss";
+import AdminModal from "../../../components/admin/modal/AdminModal";
 
 const AdminParts = () => {
   const [partOptions, setPartOptions] = useState({});
@@ -57,8 +58,7 @@ const AdminParts = () => {
     }
 
     if (
-      partOptions[selectedCategory] &&
-      partOptions[selectedCategory].some(
+      partOptions[selectedCategory]?.some(
         (option) => option.value.toLowerCase() === value.toLowerCase()
       )
     ) {
@@ -69,8 +69,10 @@ const AdminParts = () => {
     }
 
     try {
+      // ✅ Include `value` field in the request
       const addedOption = await createPartOption({
         category: selectedCategory,
+        value, // Fix: Ensure value is included
         stock,
       });
 
@@ -95,10 +97,18 @@ const AdminParts = () => {
     try {
       await deletePartOption(id);
 
-      setPartOptions((prev) => ({
-        ...prev,
-        [category]: prev[category].filter((option) => option._id !== id),
-      }));
+      setPartOptions((prev) => {
+        if (!prev[category]) return prev; // 🛑 Ensure category exists
+
+        const updatedOptions = prev[category].filter(
+          (option) => option._id !== id
+        );
+
+        return {
+          ...prev,
+          [category]: updatedOptions.length > 0 ? updatedOptions : undefined, // Remove category if empty
+        };
+      });
 
       toast.success("Part option deleted successfully!");
     } catch (err) {
@@ -193,65 +203,59 @@ const AdminParts = () => {
           ))
         )}
       </div>
-
-      <Modal
+      <AdminModal
         show={showModal}
         onHide={() => setShowModal(false)}
-        size="md"
-        centered
+        title={`Add New ${selectedCategory}`}
+        onSave={handleAddOption}
+        isEditing={false}
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Add New {selectedCategory}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <form onSubmit={handleAddOption}>
-            <div className="mb-3">
-              <label htmlFor="value" className="form-label">
-                Value
-              </label>
-              <input
-                type="text"
-                value={newOption.value}
-                onChange={(e) =>
-                  setNewOption((prev) => ({ ...prev, value: e.target.value }))
-                }
-                className="form-control"
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="stock" className="form-label">
-                Stock Status
-              </label>
-              <Select
-                value={{
-                  value: newOption.stock,
-                  label:
-                    newOption.stock === "in_stock"
-                      ? "In Stock"
-                      : "Out of Stock",
-                }}
-                onChange={(selected) =>
-                  setNewOption((prev) => ({ ...prev, stock: selected.value }))
-                }
-                options={[
-                  { value: "in_stock", label: "In Stock" },
-                  { value: "out_of_stock", label: "Out of Stock" },
-                ]}
-                isSearchable={false}
-                className="react-select-container"
-                classNamePrefix="react-select"
-              />
-            </div>
-            <Button variant="secondary" onClick={() => setShowModal(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" className="ms-2">
-              Add {selectedCategory}
-            </Button>
-          </form>
-        </Modal.Body>
-      </Modal>
+        <form onSubmit={handleAddOption}>
+          <div className="mb-3">
+            <label htmlFor="value" className="form-label">
+              Value
+            </label>
+            <input
+              id="value"
+              type="text"
+              value={newOption.value | ""}
+              onChange={(e) =>
+                setNewOption((prev) => ({ ...prev, value: e.target.value }))
+              }
+              className="form-control"
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="stock" className="form-label">
+              Stock Status
+            </label>
+            <Select
+              value={{
+                value: newOption.stock,
+                label:
+                  newOption.stock === "in_stock" ? "In Stock" : "Out of Stock",
+              }}
+              onChange={(selected) =>
+                setNewOption((prev) => ({ ...prev, stock: selected.value }))
+              }
+              options={[
+                { value: "in_stock", label: "In Stock" },
+                { value: "out_of_stock", label: "Out of Stock" },
+              ]}
+              isSearchable={false}
+              className="react-select-container"
+              classNamePrefix="react-select"
+            />
+          </div>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary" className="ms-2">
+            Add {selectedCategory}
+          </Button>
+        </form>
+      </AdminModal>
     </div>
   );
 };

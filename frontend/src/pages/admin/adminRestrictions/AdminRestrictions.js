@@ -4,8 +4,9 @@ import LoadingSpinner from "../../../components/shared/loadingSpinner/LoadingSpi
 import ErrorMessage from "../../../components/shared/error/ErrorMessage";
 import { toast } from "react-toastify";
 import Select from "react-select";
-import { Accordion, Modal, Button } from "react-bootstrap";
+import { Accordion } from "react-bootstrap";
 import "./adminRestrictions.scss";
+import AdminModal from "../../../components/admin/modal/AdminModal";
 
 const AdminRestrictions = () => {
   const [partOptions, setPartOptions] = useState({});
@@ -58,10 +59,6 @@ const AdminRestrictions = () => {
     setEditingRestriction(category || null);
     setNewRestriction({ category, values });
     setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
   };
 
   const handleSaveRestriction = async () => {
@@ -188,6 +185,7 @@ const AdminRestrictions = () => {
                     </span>
                     <div>
                       <button
+                        data-testid={`edit-restriction-${selectedOption.value}`}
                         className="btn btn-sm btn-warning me-2"
                         onClick={() => handleOpenModal(category, values)}
                         disabled={loadingAction}
@@ -209,6 +207,7 @@ const AdminRestrictions = () => {
           )}
           <button
             className="btn btn-primary mt-3"
+            data-testid={`add-restriction-${selectedOption.value}`}
             onClick={() => handleOpenModal()}
           >
             Add Restriction
@@ -216,69 +215,68 @@ const AdminRestrictions = () => {
         </div>
       )}
 
-      <Modal show={showModal} onHide={handleCloseModal} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {editingRestriction ? "Edit Restriction" : "Add Restriction"}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="mb-3">
-            <label htmlFor="category" className="form-label">
-              Restriction Category
-            </label>
-            <Select
-              options={Object.keys(partOptions).map((cat) => ({
-                value: cat,
-                label: cat,
-              }))}
-              onChange={(selected) =>
-                setNewRestriction((prev) => ({
-                  ...prev,
-                  category: selected.value,
-                }))
-              }
-              value={
-                newRestriction.category
-                  ? {
-                      value: newRestriction.category,
-                      label: newRestriction.category,
-                    }
-                  : null
-              }
-              isDisabled={editingRestriction}
-              placeholder="Select Category"
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="values" className="form-label">
-              Restricted Values
-            </label>
-            <Select
-              options={(partOptions[newRestriction.category] || []).map(
-                (opt) => ({ value: opt.value, label: opt.value })
-              )}
-              isMulti
-              onChange={(selected) =>
-                setNewRestriction((prev) => ({
-                  ...prev,
-                  values: selected.map((s) => s.value),
-                }))
-              }
-              value={newRestriction.values.map((v) => ({ value: v, label: v }))}
-              placeholder="Select Restricted Values"
-            />
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleSaveRestriction}>
-            Save
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <AdminModal
+        show={showModal}
+        title={editingRestriction ? "Edit Restriction" : "Add Restriction"}
+        onSave={handleSaveRestriction}
+        onHide={() => setShowModal(false)}
+        isEditing={false}
+      >
+        <div className="mb-3">
+          <label htmlFor="category" className="form-label">
+            Restriction Category
+          </label>
+          <Select
+            id="category-select"
+            inputId="category-select"
+            aria-label="Restriction Category"
+            data-testid="category-select"
+            options={Object.keys(partOptions).map((cat) => ({
+              value: cat,
+              label: cat,
+            }))}
+            onChange={(selected) =>
+              setNewRestriction((prev) => ({
+                ...prev,
+                category: selected.value,
+              }))
+            }
+            value={
+              newRestriction.category
+                ? {
+                    value: newRestriction.category,
+                    label: newRestriction.category,
+                  }
+                : null
+            }
+            isDisabled={editingRestriction}
+            placeholder="Select Category"
+          />
+        </div>
+        <div className="mb-3">
+          <label htmlFor="values" className="form-label">
+            Restricted Values
+          </label>
+          <Select
+            data-testid="values-select" // ✅ Add test id for easier selection
+            id="values-select"
+            inputId="values-select"
+            aria-label="Restricted Values" // ✅ Accessibility improvement
+            options={(partOptions[newRestriction.category] || []).map(
+              (opt) => ({ value: opt.value, label: opt.value })
+            )}
+            isMulti
+            onChange={(selected) =>
+              setNewRestriction((prev) => ({
+                ...prev,
+                values: selected.map((s) => s.value),
+              }))
+            }
+            value={newRestriction.values.map((v) => ({ value: v, label: v }))}
+            placeholder="Select Restricted Values"
+          />
+        </div>
+      </AdminModal>
     </div>
   );
 };
