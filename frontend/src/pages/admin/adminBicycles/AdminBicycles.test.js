@@ -15,9 +15,6 @@ import {
   updateBicycle,
 } from "../../../api/api";
 
-// Mock the API functions
-jest.mock("../../../api/api");
-
 describe("AdminBicycles Component", () => {
   const mockBicycles = [
     {

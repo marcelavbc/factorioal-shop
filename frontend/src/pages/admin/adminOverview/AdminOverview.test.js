@@ -4,8 +4,6 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import AdminOverview from "./AdminOverview";
 import { getBicycles, getPartOptions } from "../../../api/api";
 
-jest.mock("../../../api/api");
-
 describe("AdminOverview Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();

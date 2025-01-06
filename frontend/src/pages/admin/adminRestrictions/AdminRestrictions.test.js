@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import AdminRestrictions from "./AdminRestrictions";
 import { getPartOptions } from "../../../api/api";
@@ -17,7 +11,6 @@ jest.mock("../../../components/admin/modal/AdminModal", () => (props) => {
     </div>
   );
 });
-jest.mock("../../../api/api");
 
 describe("AdminRestrictions Component", () => {
   beforeEach(() => {

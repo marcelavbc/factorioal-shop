@@ -16,8 +16,6 @@ import {
   updatePartOption,
 } from "../../../api/api";
 
-jest.mock("../../../api/api");
-
 describe("AdminParts Component", () => {
   const mockPartOptions = {
     Frame: [

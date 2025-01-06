@@ -4,9 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import BicyclePage from "./BicyclePage";
 import { getBicycleById, addToCart } from "../../api/api";
 import { ToastContainer } from "react-toastify";
-import { useCart } from "../../context/CartContext";
 
-jest.mock("../../api/api");
 jest.mock("../../context/CartContext", () => ({
   useCart: jest.fn(() => ({
     cartItems: 0,

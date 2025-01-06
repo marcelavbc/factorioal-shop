@@ -6,7 +6,6 @@ import { useCart } from "../../context/CartContext";
 import { getCart } from "../../api/api";
 
 jest.mock("../../context/CartContext");
-jest.mock("../../api/api");
 
 describe("Layout Component", () => {
   beforeEach(() => {
