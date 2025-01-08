@@ -28,6 +28,14 @@ const CartPage = () => {
         const data = await getCart(cartId);
         setCart(data);
         setCartItems(data.items.length);
+
+        // ✅ Initialize `editingQuantities` based on fetched cart items
+        const initialQuantities = {};
+        data.items.forEach((item) => {
+          initialQuantities[item._id] = item.quantity; // Set input value to existing quantity
+        });
+        setEditingQuantities(initialQuantities);
+
         setLoading(false);
       } catch (err) {
         setError("Failed to load cart data.");
@@ -135,7 +143,7 @@ const CartPage = () => {
                   <input
                     id={`quantity-${item._id}`}
                     type="text"
-                    value={editingQuantities[item._id] || ""}
+                    value={editingQuantities[item._id]}
                     onChange={(e) =>
                       handleQuantityChange(item._id, e.target.value)
                     }

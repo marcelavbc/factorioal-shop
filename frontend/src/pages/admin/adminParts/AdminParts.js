@@ -218,7 +218,7 @@ const AdminParts = () => {
             <input
               id="value"
               type="text"
-              value={newOption.value | ""}
+              value={newOption.value || ""}
               onChange={(e) =>
                 setNewOption((prev) => ({ ...prev, value: e.target.value }))
               }
