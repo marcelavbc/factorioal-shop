@@ -32,7 +32,9 @@ export const CartProvider = ({ children }) => {
         );
 
         setCartItems(totalQuantity);
-      } catch (err) {}
+      } catch (err) {
+        console.error(err);
+      }
     };
 
     fetchCart();
