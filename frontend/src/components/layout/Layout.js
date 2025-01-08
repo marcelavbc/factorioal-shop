@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { Link, Outlet } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
-import { getCart } from "../../api/api";
 
 import "./layout.scss";
+import { useCart } from "../../context/CartContext";
+import { getCart } from "../../api/api";
 
 const Layout = () => {
   const { cartItems, setCartItems } = useCart();

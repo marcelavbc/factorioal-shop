@@ -11,13 +11,6 @@ Object.defineProperty(window, "localStorage", {
   writable: true,
 });
 
-// ✅ Auto-mock API Calls
-jest.mock("./api/api");
-
-// ✅ Auto-mock useCart Context
-jest.mock("./context/CartContext");
-
-// ✅ Clear mocks before each test
 beforeEach(() => {
   jest.clearAllMocks();
 });

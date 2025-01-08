@@ -2,17 +2,19 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Layout from "./Layout";
+import * as api from "../../api/api";
 import { useCart } from "../../context/CartContext";
-import { getCart } from "../../api/api";
 
 jest.mock("../../context/CartContext");
 
 describe("Layout Component", () => {
   beforeEach(() => {
+    jest.restoreAllMocks();
     jest.clearAllMocks();
+
+    jest.spyOn(api, "getCart").mockResolvedValue({ items: [] });
+
     useCart.mockReturnValue({ cartItems: 0, setCartItems: jest.fn() });
-    localStorage.getItem.mockReturnValue(null);
-    getCart.mockResolvedValue({ items: [] });
   });
 
   it("renders logo and cart icon", () => {
@@ -44,7 +46,9 @@ describe("Layout Component", () => {
     useCart.mockReturnValue({ cartItems: 0, setCartItems: mockSetCartItems });
 
     localStorage.getItem.mockReturnValue("test-cart-id");
-    getCart.mockResolvedValue({ items: [{ quantity: 2 }, { quantity: 3 }] });
+    jest
+      .spyOn(api, "getCart")
+      .mockResolvedValue({ items: [{ quantity: 2 }, { quantity: 3 }] });
 
     render(
       <BrowserRouter>
@@ -52,7 +56,9 @@ describe("Layout Component", () => {
       </BrowserRouter>
     );
 
-    await waitFor(() => expect(getCart).toHaveBeenCalledWith("test-cart-id"));
+    await waitFor(() =>
+      expect(api.getCart).toHaveBeenCalledWith("test-cart-id")
+    );
     expect(mockSetCartItems).toHaveBeenCalledWith(5);
   });
 
@@ -68,7 +74,7 @@ describe("Layout Component", () => {
       </BrowserRouter>
     );
 
-    await waitFor(() => expect(getCart).not.toHaveBeenCalled());
+    await waitFor(() => expect(api.getCart).not.toHaveBeenCalled());
     expect(mockSetCartItems).not.toHaveBeenCalled();
   });
 });

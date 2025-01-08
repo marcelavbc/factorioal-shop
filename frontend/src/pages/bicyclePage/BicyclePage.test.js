@@ -2,8 +2,13 @@ import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import BicyclePage from "./BicyclePage";
-import { getBicycleById, addToCart } from "../../api/api";
+import { getBicycleById, addToCart, getCart } from "../../api/api";
 import { ToastContainer } from "react-toastify";
+const mockNavigate = jest.fn();
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: () => mockNavigate,
+}));
 
 jest.mock("../../context/CartContext", () => ({
   useCart: jest.fn(() => ({
@@ -11,7 +16,11 @@ jest.mock("../../context/CartContext", () => ({
     setCartItems: jest.fn(),
   })),
 }));
-
+jest.mock("../../api/api", () => ({
+  getBicycleById: jest.fn(),
+  addToCart: jest.fn(),
+  getCart: jest.fn(),
+}));
 const mockBicycle = {
   _id: "677a50d40d567747ae89f131",
   name: "Fat Tire Pro",
@@ -175,7 +184,7 @@ const mockBicycle = {
 describe("BicyclePage Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    getBicycleById.mockResolvedValue(mockBicycle); // ✅ Ensure mock is set before rendering
+    getBicycleById.mockResolvedValue(mockBicycle);
   });
 
   it("renders loading spinner initially", async () => {
@@ -187,7 +196,7 @@ describe("BicyclePage Component", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("status")).toBeInTheDocument(); // Check if spinner is present
+    expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
   it("renders bicycle details correctly", async () => {
@@ -412,7 +421,6 @@ describe("BicyclePage Component", () => {
   });
 
   it("creates a new cart and adds bicycle when no cart exists", async () => {
-    // ✅ Mock addToCart with updated response structure
     addToCart.mockResolvedValue({
       cartId: "677b23f1ebfaaa703ac8aa31",
       items: [
@@ -467,19 +475,266 @@ describe("BicyclePage Component", () => {
       name: /add to cart/i,
     });
 
-    // ✅ Ensure button is enabled before clicking
     await waitFor(() => expect(addToCartButton).not.toBeDisabled());
 
     fireEvent.click(addToCartButton);
 
-    // ✅ Ensure `addToCart` is called correctly
     await waitFor(() => {
       expect(addToCart).toHaveBeenCalled();
     });
 
-    // ✅ Ensure success toast appears
     await waitFor(() => {
       expect(screen.getByText("Bicycle added to cart!")).toBeInTheDocument();
+    });
+  });
+  it("prevents adding to cart when required options are missing", async () => {
+    render(
+      <MemoryRouter>
+        <BicyclePage />
+        <ToastContainer />
+      </MemoryRouter>
+    );
+
+    await screen.findByText("Fat Tire Pro");
+
+    const addToCartButton = screen.getByRole("button", {
+      name: /add to cart/i,
+    });
+
+    expect(addToCartButton).toBeDisabled();
+
+    fireEvent.mouseDown(screen.getByLabelText(/Frame Finish/i));
+    fireEvent.click(screen.getByText("Matte"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Frame Type/i));
+    fireEvent.click(screen.getByText("Full Suspension"));
+
+    expect(addToCartButton).toBeDisabled();
+
+    fireEvent.mouseDown(screen.getByLabelText(/Rim Color/i));
+    fireEvent.click(screen.getByText("Black"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Chain/i));
+    fireEvent.click(screen.getByText("8-Speed Chain"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Wheels/i));
+    fireEvent.click(screen.getByText("Fat Bike Wheels"));
+
+    await waitFor(() => expect(addToCartButton).not.toBeDisabled());
+  });
+  it("handles API failure when adding to cart", async () => {
+    addToCart.mockRejectedValue(new Error("Server error"));
+
+    render(
+      <MemoryRouter>
+        <BicyclePage />
+        <ToastContainer />
+      </MemoryRouter>
+    );
+
+    await screen.findByText("Fat Tire Pro");
+
+    // ✅ Fill in required selections
+    fireEvent.mouseDown(screen.getByLabelText(/Frame Finish/i));
+    fireEvent.click(screen.getByText("Matte"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Frame Type/i));
+    fireEvent.click(screen.getByText("Full Suspension"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Rim Color/i));
+    fireEvent.click(screen.getByText("Black"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Chain/i));
+    fireEvent.click(screen.getByText("8-Speed Chain"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Wheels/i));
+    fireEvent.click(screen.getByText("Fat Bike Wheels"));
+
+    const addToCartButton = screen.getByRole("button", {
+      name: /add to cart/i,
+    });
+
+    // ✅ Click "Add to Cart"
+    fireEvent.click(addToCartButton);
+
+    await waitFor(() => {
+      expect(addToCart).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to add to cart.")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Fat Bike Wheels")).toBeInTheDocument();
+    expect(screen.getByText("Matte")).toBeInTheDocument();
+  });
+  it("ensures default image is used if no image exists", async () => {
+    getBicycleById.mockResolvedValue({
+      ...mockBicycle,
+      image: null,
+    });
+
+    render(
+      <MemoryRouter>
+        <BicyclePage />
+      </MemoryRouter>
+    );
+
+    await screen.findByText("Fat Tire Pro");
+
+    expect(screen.getByAltText("Fat Tire Pro").getAttribute("src")).toBe(
+      "https://via.placeholder.com/400"
+    );
+  });
+  it("ensures 'Add to Cart' button remains disabled when no options are selected", async () => {
+    render(
+      <MemoryRouter>
+        <BicyclePage />
+      </MemoryRouter>
+    );
+
+    await screen.findByText("Fat Tire Pro");
+
+    const addToCartButton = screen.getByRole("button", {
+      name: /add to cart/i,
+    });
+
+    expect(addToCartButton).toBeDisabled();
+  });
+  it("enables 'Add to Cart' when all required options are selected", async () => {
+    render(
+      <MemoryRouter>
+        <BicyclePage />
+      </MemoryRouter>
+    );
+
+    await screen.findByText("Fat Tire Pro");
+
+    fireEvent.mouseDown(screen.getByLabelText(/Frame Type/i));
+    fireEvent.click(screen.getByText("Full Suspension"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Frame Finish/i));
+    fireEvent.click(screen.getByText("Matte"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Wheels/i));
+    fireEvent.click(screen.getByText("Fat Bike Wheels"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Rim Color/i));
+    fireEvent.click(screen.getByText("Black"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Chain/i));
+    fireEvent.click(screen.getByText("8-Speed Chain"));
+
+    const addToCartButton = screen.getByRole("button", {
+      name: /add to cart/i,
+    });
+
+    await waitFor(() => {
+      expect(addToCartButton).not.toBeDisabled();
+    });
+  });
+
+  it("handles successful 'Add to Cart' process", async () => {
+    addToCart.mockResolvedValue({ cartId: "12345" });
+
+    render(
+      <MemoryRouter>
+        <BicyclePage />
+      </MemoryRouter>
+    );
+
+    await screen.findByText("Fat Tire Pro");
+
+    fireEvent.mouseDown(screen.getByLabelText(/Frame Type/i));
+    fireEvent.click(screen.getByText("Full Suspension"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Frame Finish/i));
+    fireEvent.click(screen.getByText("Matte"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Wheels/i));
+    fireEvent.click(screen.getByText("Fat Bike Wheels"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Rim Color/i));
+    fireEvent.click(screen.getByText("Black"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Chain/i));
+    fireEvent.click(screen.getByText("8-Speed Chain"));
+
+    fireEvent.click(screen.getByRole("button", { name: /add to cart/i }));
+
+    await waitFor(() => {
+      expect(addToCart).toHaveBeenCalled();
+    });
+  });
+
+  it("handles restriction logic when selecting an invalid combination", async () => {
+    render(
+      <MemoryRouter>
+        <BicyclePage />
+        <ToastContainer />
+      </MemoryRouter>
+    );
+
+    await screen.findByText("Fat Tire Pro");
+
+    fireEvent.mouseDown(screen.getByLabelText(/Rim Color:/i));
+    fireEvent.click(screen.getByText("Red"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Wheels:/i));
+    fireEvent.click(screen.getByText("Fat Bike Wheels"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          /restriction: "Fat Bike Wheels" does not allow "Rim Color" to be "Red"/i
+        )
+      ).toBeInTheDocument();
+    });
+  });
+  it("navigates to the cart page after successful addition", async () => {
+    addToCart.mockResolvedValue({ cartId: "12345" });
+    getCart.mockResolvedValue({ cartId: "12345", items: [] });
+
+    render(
+      <MemoryRouter>
+        <BicyclePage />
+        <ToastContainer />
+      </MemoryRouter>
+    );
+
+    await screen.findByText("Fat Tire Pro");
+
+    fireEvent.mouseDown(screen.getByLabelText(/Frame Type/i));
+    fireEvent.click(screen.getByText("Full Suspension"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Frame Finish/i));
+    fireEvent.click(screen.getByText("Matte"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Wheels/i));
+    fireEvent.click(screen.getByText("Fat Bike Wheels"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Rim Color/i));
+    fireEvent.click(screen.getByText("Black"));
+
+    fireEvent.mouseDown(screen.getByLabelText(/Chain/i));
+    fireEvent.click(screen.getByText("8-Speed Chain"));
+
+    const addToCartButton = screen.getByRole("button", {
+      name: /add to cart/i,
+    });
+
+    await waitFor(() => {
+      expect(addToCartButton).not.toBeDisabled();
+    });
+
+    fireEvent.click(addToCartButton);
+
+    await waitFor(() => {
+      expect(addToCart).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/cart");
     });
   });
 });

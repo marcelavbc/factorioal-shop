@@ -1,347 +1,463 @@
-import {
-  addToCart,
-  createBicycle,
-  createPartOption,
-  deleteBicycle,
-  getBicycles,
-  getCart,
-  removeFromCart,
-  updateCartItem,
-  updatePartOption,
-  updateRestrictions,
-} from "./api";
+import * as api from "./api";
+import axios from "axios";
 
-describe("getBicyclesById", () => {
-  it("should return bicycle data when valid ID is provided", async () => {
-    const mockBicycle = {
-      _id: "677a50d40d567747ae89f131",
-      name: "Fat Tire Pro",
-      price: 1500,
-      image:
-        "https://images.unsplash.com/photo-1528629297340-d1d466945dc5?q=80&w=2122&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    };
-    getBicycles.mockResolvedValue([mockBicycle]);
+jest.mock("axios");
 
-    // Act
-    const bicycles = await getBicycles();
-
-    // Assert
-    expect(bicycles).toEqual([mockBicycle]);
+describe("getBicycleById", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
-  it("should throw error when bicycle ID does not exist", async () => {
-    // Arrange
-    getBicycles.mockRejectedValue(new Error("Bicycle not found"));
 
-    // Act
-    let error;
-    try {
-      await getBicycles();
-    } catch (err) {
-      error = err;
-    }
-    // Assert
-    expect(error).toBeDefined();
-    expect(error.message).toBe("Bicycle not found");
+  it("should fetch a bicycle successfully", async () => {
+    jest.spyOn(api, "getBicycleById");
+
+    axios.get.mockResolvedValue({ data: { name: "Bicycle" } });
+
+    const response = await api.getBicycleById("bicycle-123");
+
+    expect(response).toEqual({ name: "Bicycle" });
+    expect(axios.get).toHaveBeenCalledWith(
+      "http://localhost:5001/api/bicycles/bicycle-123"
+    );
+    expect(api.getBicycleById).toHaveBeenCalledTimes(1);
+  });
+  it("should throw an error when fetching fails", async () => {
+    jest.spyOn(api, "getBicycleById");
+
+    axios.get.mockRejectedValue(new Error("Fetch failed"));
+
+    await expect(api.getBicycleById("invalid-id")).rejects.toThrow(
+      "Fetch failed"
+    );
+
+    expect(api.getBicycleById).toHaveBeenCalledTimes(1);
   });
 });
 
 describe("getCart", () => {
-  it("should return cart data when valid ID is provided", async () => {
-    const mockCart = {
-      cartId: "mock-cart-123",
-      items: [
-        {
-          bicycle: {
-            _id: "677a50d40d567747ae89f131",
-            name: "Fat Tire Pro",
-            price: 1500,
-            image:
-              "https://images.unsplash.com/photo-1528629297340-d1d466945dc5?q=80&w=2122&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-          },
-          options: [
-            { category: "Wheels", value: "Fat Bike Wheels", _id: "opt-1" },
-            { category: "Rim Color", value: "Black", _id: "opt-2" },
-            { category: "Frame Type", value: "Full Suspension", _id: "opt-3" },
-            { category: "Frame Finish", value: "Matte", _id: "opt-4" },
-            { category: "Chain", value: "8-Speed Chain", _id: "opt-5" },
-          ],
-          quantity: 1,
-          _id: "cart-item-1",
-        },
-      ],
-    };
-    getCart.mockResolvedValue(mockCart);
-
-    // Act
-    const cart = await getCart();
-
-    // Assert
-    expect(cart).toEqual(mockCart);
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
-  it("should throw error when cart ID does not exist", async () => {
-    // Arrange
-    getCart.mockRejectedValue(new Error("Cart not found"));
 
-    // Act
-    let error;
-    try {
-      await getCart();
-    } catch (err) {
-      error = err;
-    }
-    // Assert
-    expect(error).toBeDefined();
-    expect(error.message).toBe("Cart not found");
+  it("should fetch the cart successfully", async () => {
+    jest.spyOn(api, "getCart");
+
+    axios.get.mockResolvedValue({ data: { items: [] } });
+
+    const response = await api.getCart("cart-123");
+
+    expect(response).toEqual({ items: [] });
+    expect(axios.get).toHaveBeenCalledWith("http://localhost:5001/api/cart", {
+      params: { cartId: "cart-123" },
+    });
+    expect(api.getCart).toHaveBeenCalledTimes(1);
+  });
+
+  it("should throw an error when fetching fails", async () => {
+    jest.spyOn(api, "getCart");
+
+    axios.get.mockRejectedValue(new Error("Fetch failed"));
+
+    await expect(api.getCart("invalid-id")).rejects.toThrow("Fetch failed");
+
+    expect(api.getCart).toHaveBeenCalledTimes(1);
   });
 });
 
 describe("addToCart", () => {
-  it("should successfully add a bicycle to the cart", async () => {
-    const payload = {
-      cartId: "mock-cart-123",
-      bicycleId: "677a50d40d567747ae89f131",
-      quantity: 1,
-    };
-    const mockResponse = { success: true };
-
-    addToCart.mockResolvedValue(mockResponse);
-
-    const response = await addToCart(payload);
-
-    expect(response).toEqual(mockResponse);
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it("should throw an error if add to cart fails", async () => {
-    addToCart.mockRejectedValue(new Error("Failed to add item"));
+  it("should add an item to the cart successfully", async () => {
+    jest.spyOn(api, "addToCart");
 
-    let error;
-    try {
-      await addToCart({
-        cartId: "mock-cart-123",
-        bicycleId: "invalid-bike",
-        quantity: 1,
-      });
-    } catch (err) {
-      error = err;
-    }
+    axios.post.mockResolvedValue({ data: { success: true } });
 
-    expect(error).toBeDefined();
-    expect(error.message).toBe("Failed to add item");
+    const response = await api.addToCart({ itemId: "item-123" });
+
+    expect(response).toEqual({ success: true });
+    expect(axios.post).toHaveBeenCalledWith("http://localhost:5001/api/cart", {
+      itemId: "item-123",
+    });
+    expect(api.addToCart).toHaveBeenCalledTimes(1);
+  });
+  it("should throw an error when adding fails", async () => {
+    jest.spyOn(api, "addToCart");
+
+    axios.post.mockRejectedValue(new Error("Add failed"));
+
+    await expect(api.addToCart({ itemId: "invalid-id" })).rejects.toThrow(
+      "Add failed"
+    );
+
+    expect(api.addToCart).toHaveBeenCalledTimes(1);
   });
 });
+
 describe("removeFromCart", () => {
-  it("should successfully remove an item from the cart", async () => {
-    const mockResponse = { success: true };
-
-    removeFromCart.mockResolvedValue(mockResponse);
-
-    const response = await removeFromCart("mock-cart-123", "cart-item-1");
-
-    expect(response).toEqual(mockResponse);
-    expect(removeFromCart).toHaveBeenCalledWith("mock-cart-123", "cart-item-1");
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it("should throw an error if removing item fails", async () => {
-    removeFromCart.mockRejectedValue(new Error("Failed to remove item"));
+  it("should remove an item from the cart successfully", async () => {
+    jest.spyOn(api, "removeFromCart");
 
-    let error;
-    try {
-      await removeFromCart("mock-cart-123", "invalid-item");
-    } catch (err) {
-      error = err;
-    }
+    axios.delete.mockResolvedValue({ data: { success: true } });
 
-    expect(error).toBeDefined();
-    expect(error.message).toBe("Failed to remove item");
+    const response = await api.removeFromCart("cart-123", "item-123");
+
+    expect(response).toEqual({ success: true });
+    expect(axios.delete).toHaveBeenCalledWith(
+      "http://localhost:5001/api/cart/item-123",
+      { data: { cartId: "cart-123" } }
+    );
+    expect(api.removeFromCart).toHaveBeenCalledTimes(1);
+  });
+
+  it("should throw an error when removal fails", async () => {
+    jest.spyOn(api, "removeFromCart");
+
+    axios.delete.mockRejectedValue(new Error("Remove failed"));
+
+    await expect(api.removeFromCart("cart-123", "invalid-id")).rejects.toThrow(
+      "Remove failed"
+    );
+
+    expect(api.removeFromCart).toHaveBeenCalledTimes(1);
   });
 });
+
 describe("updateCartItem", () => {
-  it("should update item quantity successfully", async () => {
-    const mockResponse = { success: true };
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-    updateCartItem.mockResolvedValue(mockResponse);
+  it("should update the cart item successfully", async () => {
+    jest.spyOn(api, "updateCartItem");
 
-    const response = await updateCartItem("mock-cart-123", "cart-item-1", {
+    axios.patch.mockResolvedValue({ data: { success: true } });
+
+    const response = await api.updateCartItem("cart-123", "item-123", {
       quantity: 2,
     });
 
-    expect(response).toEqual(mockResponse);
-    expect(updateCartItem).toHaveBeenCalledWith(
-      "mock-cart-123",
-      "cart-item-1",
+    expect(response).toEqual({ success: true });
+    expect(axios.patch).toHaveBeenCalledWith(
+      "http://localhost:5001/api/cart/item-123?cartId=cart-123",
       { quantity: 2 }
     );
+    expect(api.updateCartItem).toHaveBeenCalledTimes(1);
   });
 
-  it("should throw an error if update fails", async () => {
-    updateCartItem.mockRejectedValue(new Error("Failed to update quantity"));
+  it("should throw an error when update fails", async () => {
+    jest.spyOn(api, "updateCartItem");
 
-    let error;
-    try {
-      await updateCartItem("mock-cart-123", "invalid-item", { quantity: 3 });
-    } catch (err) {
-      error = err;
-    }
+    axios.patch.mockRejectedValue(new Error("Update failed"));
 
-    expect(error).toBeDefined();
-    expect(error.message).toBe("Failed to update quantity");
-  });
-});
-describe("createBicycle & deleteBicycle", () => {
-  it("should create a new bicycle", async () => {
-    const newBike = {
-      name: "Speed Racer",
-      price: 1800,
-      image: "https://example.com/speed-racer.jpg",
-    };
+    await expect(
+      api.updateCartItem("cart-123", "invalid-id", { quantity: 2 })
+    ).rejects.toThrow("Update failed");
 
-    const mockResponse = { _id: "new-bike-123", ...newBike };
-
-    createBicycle.mockResolvedValue(mockResponse);
-
-    const response = await createBicycle(newBike);
-
-    expect(response).toEqual(mockResponse);
-    expect(createBicycle).toHaveBeenCalledWith(newBike);
-  });
-
-  it("should delete a bicycle", async () => {
-    const mockResponse = { success: true };
-
-    deleteBicycle.mockResolvedValue(mockResponse);
-
-    const response = await deleteBicycle("bike-123");
-
-    expect(response).toEqual(mockResponse);
-    expect(deleteBicycle).toHaveBeenCalledWith("bike-123");
-  });
-
-  it("should throw an error if bicycle creation fails", async () => {
-    createBicycle.mockRejectedValue(new Error("Bicycle creation failed"));
-
-    let error;
-    try {
-      await createBicycle({ name: "Broken Bike" });
-    } catch (err) {
-      error = err;
-    }
-
-    expect(error).toBeDefined();
-    expect(error.message).toBe("Bicycle creation failed");
+    expect(api.updateCartItem).toHaveBeenCalledTimes(1);
   });
 });
-describe("createPartOption & updatePartOption", () => {
-  it("should create a new part option", async () => {
-    const partOption = { category: "Frame", value: "Carbon" };
-    const mockResponse = { _id: "part-123", ...partOption };
 
-    createPartOption.mockResolvedValue(mockResponse);
-
-    const response = await createPartOption(partOption);
-
-    expect(response).toEqual(mockResponse);
-    expect(createPartOption).toHaveBeenCalledWith(partOption);
+describe("getPartOptions", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it("should update a part option", async () => {
-    const updatedData = { stock: "out_of_stock" };
-    const mockResponse = { success: true };
+  it("should fetch part options successfully", async () => {
+    jest.spyOn(api, "getPartOptions");
 
-    updatePartOption.mockResolvedValue(mockResponse);
+    axios.get.mockResolvedValue({ data: [{ _id: "part-123" }] });
 
-    const response = await updatePartOption("part-123", updatedData);
+    const response = await api.getPartOptions();
 
-    expect(response).toEqual(mockResponse);
-    expect(updatePartOption).toHaveBeenCalledWith("part-123", updatedData);
+    expect(response).toEqual([{ _id: "part-123" }]);
+    expect(axios.get).toHaveBeenCalledWith(
+      "http://localhost:5001/api/part-options"
+    );
+    expect(api.getPartOptions).toHaveBeenCalledTimes(1);
   });
 
-  it("should throw an error if updating a part fails", async () => {
-    updatePartOption.mockRejectedValue(
-      new Error("Failed to update part option")
+  it("should throw an error when fetching fails", async () => {
+    jest.spyOn(api, "getPartOptions");
+
+    axios.get.mockRejectedValue(new Error("Fetch failed"));
+
+    await expect(api.getPartOptions()).rejects.toThrow("Fetch failed");
+
+    expect(api.getPartOptions).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("deletePartOption", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should delete a part option successfully", async () => {
+    jest.spyOn(api, "deletePartOption");
+
+    axios.delete.mockResolvedValue({ data: { success: true } });
+
+    const response = await api.deletePartOption("part-123");
+
+    expect(response).toEqual({ success: true });
+    expect(axios.delete).toHaveBeenCalledWith(
+      "http://localhost:5001/api/part-options/part-123"
+    );
+    expect(api.deletePartOption).toHaveBeenCalledTimes(1);
+  });
+
+  it("should throw an error when deletion fails", async () => {
+    jest.spyOn(api, "deletePartOption");
+
+    axios.delete.mockRejectedValue(new Error("Delete failed"));
+
+    await expect(api.deletePartOption("invalid-id")).rejects.toThrow(
+      "Delete failed"
     );
 
-    let error;
-    try {
-      await updatePartOption("invalid-part", { stock: "out_of_stock" });
-    } catch (err) {
-      error = err;
-    }
+    expect(api.deletePartOption).toHaveBeenCalledTimes(1);
+  });
+});
 
-    expect(error).toBeDefined();
-    expect(error.message).toBe("Failed to update part option");
+describe("getBicycles", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should fetch bicycles successfully", async () => {
+    jest.spyOn(api, "getBicycles");
+
+    axios.get.mockResolvedValue({ data: [{ _id: "bicycle-123" }] });
+
+    const response = await api.getBicycles();
+
+    expect(response).toEqual([{ _id: "bicycle-123" }]);
+    expect(axios.get).toHaveBeenCalledWith(
+      "http://localhost:5001/api/bicycles"
+    );
+    expect(api.getBicycles).toHaveBeenCalledTimes(1);
+  });
+
+  it("should throw an error when fetching fails", async () => {
+    jest.spyOn(api, "getBicycles");
+
+    axios.get.mockRejectedValue(new Error("Fetch failed"));
+
+    await expect(api.getBicycles()).rejects.toThrow("Fetch failed");
+
+    expect(api.getBicycles).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("deleteBicycle", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should delete a bicycle successfully", async () => {
+    jest.spyOn(api, "deleteBicycle");
+
+    axios.delete.mockResolvedValue({ data: { success: true } });
+
+    const response = await api.deleteBicycle("bicycle-123");
+
+    expect(response).toEqual({ success: true });
+    expect(axios.delete).toHaveBeenCalledWith(
+      "http://localhost:5001/api/bicycles/bicycle-123"
+    );
+    expect(api.deleteBicycle).toHaveBeenCalledTimes(1);
+  });
+
+  it("should throw an error when deletion fails", async () => {
+    jest.spyOn(api, "deleteBicycle");
+
+    axios.delete.mockRejectedValue(new Error("Delete failed"));
+
+    await expect(api.deleteBicycle("invalid-id")).rejects.toThrow(
+      "Delete failed"
+    );
+
+    expect(api.deleteBicycle).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("createBicycle", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should create a bicycle successfully", async () => {
+    jest.spyOn(api, "createBicycle");
+
+    axios.post.mockResolvedValue({ data: { _id: "bicycle-123" } });
+
+    const response = await api.createBicycle({ name: "Bicycle" });
+
+    expect(response).toEqual({ _id: "bicycle-123" });
+    expect(axios.post).toHaveBeenCalledWith(
+      "http://localhost:5001/api/bicycles",
+      { name: "Bicycle" }
+    );
+    expect(api.createBicycle).toHaveBeenCalledTimes(1);
+  });
+
+  it("should throw an error when creation fails", async () => {
+    jest.spyOn(api, "createBicycle");
+
+    axios.post.mockRejectedValue(new Error("Create failed"));
+
+    await expect(api.createBicycle({ name: "Bicycle" })).rejects.toThrow(
+      "Create failed"
+    );
+
+    expect(api.createBicycle).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("updateBicycle", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should update a bicycle successfully", async () => {
+    jest.spyOn(api, "updateBicycle");
+
+    axios.put.mockResolvedValue({ data: { _id: "bicycle-123" } });
+
+    const response = await api.updateBicycle("bicycle-123", {
+      name: "Bicycle",
+    });
+
+    expect(response).toEqual({ _id: "bicycle-123" });
+    expect(axios.put).toHaveBeenCalledWith(
+      "http://localhost:5001/api/bicycles/bicycle-123",
+      { name: "Bicycle" }
+    );
+    expect(api.updateBicycle).toHaveBeenCalledTimes(1);
+  });
+
+  it("should throw an error when update fails", async () => {
+    jest.spyOn(api, "updateBicycle");
+
+    axios.put.mockRejectedValue(new Error("Update failed"));
+
+    await expect(
+      api.updateBicycle("invalid-id", { name: "Bicycle" })
+    ).rejects.toThrow("Update failed");
+
+    expect(api.updateBicycle).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("createPartOption", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should create a part option successfully", async () => {
+    jest.spyOn(api, "createPartOption");
+
+    axios.post.mockResolvedValue({ data: { _id: "part-123" } });
+
+    const response = await api.createPartOption({ category: "Frame" });
+
+    expect(response).toEqual({ _id: "part-123" });
+    expect(axios.post).toHaveBeenCalledWith(
+      "http://localhost:5001/api/part-options",
+      { category: "Frame" }
+    );
+    expect(api.createPartOption).toHaveBeenCalledTimes(1);
+  });
+
+  it("should throw an error when creation fails", async () => {
+    jest.spyOn(api, "createPartOption");
+
+    axios.post.mockRejectedValue(new Error("Create failed"));
+
+    await expect(api.createPartOption({ category: "Frame" })).rejects.toThrow(
+      "Create failed"
+    );
+
+    expect(api.createPartOption).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("updatePartOption", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should update a part option successfully", async () => {
+    jest.spyOn(api, "updatePartOption");
+
+    axios.put.mockResolvedValue({ data: { _id: "part-123" } });
+
+    const response = await api.updatePartOption("part-123", {
+      category: "Frame",
+    });
+
+    expect(response).toEqual({ _id: "part-123" });
+    expect(axios.put).toHaveBeenCalledWith(
+      "http://localhost:5001/api/part-options/part-123",
+      { category: "Frame" }
+    );
+    expect(api.updatePartOption).toHaveBeenCalledTimes(1);
+  });
+
+  it("should throw an error when update fails", async () => {
+    jest.spyOn(api, "updatePartOption");
+
+    axios.put.mockRejectedValue(new Error("Update failed"));
+
+    await expect(
+      api.updatePartOption("invalid-id", { category: "Frame" })
+    ).rejects.toThrow("Update failed");
+
+    expect(api.updatePartOption).toHaveBeenCalledTimes(1);
   });
 });
 
 describe("updateRestrictions", () => {
-  it("should successfully update restrictions", async () => {
-    const mockResponse = { success: true };
-    updateRestrictions.mockResolvedValue(mockResponse);
-
-    const response = await updateRestrictions("part-123", {
-      "Frame Type": ["Steel"],
-    });
-
-    expect(response).toEqual(mockResponse);
-    expect(updateRestrictions).toHaveBeenCalledWith("part-123", {
-      "Frame Type": ["Steel"],
-    });
+  beforeEach(() => {
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
   });
 
-  it("should throw an error if update fails", async () => {
-    updateRestrictions.mockRejectedValue(
-      new Error("Failed to update restrictions")
+  it("should update restrictions successfully", async () => {
+    jest.spyOn(api, "updateRestrictions");
+
+    axios.patch.mockResolvedValue({ data: { success: true } });
+
+    const restrictionsPayload = { "Frame Type": ["Steel"] };
+
+    const response = await api.updateRestrictions(
+      "part-123",
+      restrictionsPayload
     );
 
-    let error;
-    try {
-      await updateRestrictions("invalid-part", { "Frame Type": ["Steel"] });
-    } catch (err) {
-      error = err;
-    }
-
-    expect(error).toBeDefined();
-    expect(error.message).toBe("Failed to update restrictions");
-  });
-});
-
-describe("API Call Frequency", () => {
-  it("should only call getCart once", async () => {
-    getCart.mockResolvedValue({ cartId: "mock-cart-123", items: [] });
-
-    await getCart("mock-cart-123");
-
-    expect(getCart).toHaveBeenCalledTimes(1);
+    expect(response).toEqual({ success: true });
+    expect(axios.patch).toHaveBeenCalledWith(
+      "http://localhost:5001/api/part-options/part-123/restrictions",
+      { restrictions: restrictionsPayload }
+    );
+    expect(api.updateRestrictions).toHaveBeenCalledTimes(1);
   });
 
-  it("should only call addToCart once", async () => {
-    addToCart.mockResolvedValue({ success: true });
+  it("should throw an error when update fails", async () => {
+    jest.spyOn(api, "updateRestrictions");
 
-    await addToCart({ bicycleId: "bike-1" });
+    axios.patch.mockRejectedValue(new Error("Update failed"));
 
-    expect(addToCart).toHaveBeenCalledTimes(1);
-  });
+    await expect(
+      api.updateRestrictions("invalid-id", { "Frame Type": ["Steel"] })
+    ).rejects.toThrow("Update failed");
 
-  it("should only call updateCartItem once", async () => {
-    updateCartItem.mockResolvedValue({ success: true });
-
-    await updateCartItem("mock-cart-123", "cart-item-1", { quantity: 2 });
-
-    expect(updateCartItem).toHaveBeenCalledTimes(1);
-  });
-
-  it("should only call removeFromCart once", async () => {
-    removeFromCart.mockResolvedValue({ success: true });
-
-    await removeFromCart("mock-cart-123", "cart-item-1");
-
-    expect(removeFromCart).toHaveBeenCalledTimes(1);
-  });
-
-  it("should only call updateRestrictions once", async () => {
-    updateRestrictions.mockResolvedValue({ success: true });
-
-    await updateRestrictions("part-123", { "Frame Type": ["Steel"] });
-
-    expect(updateRestrictions).toHaveBeenCalledTimes(1);
+    expect(api.updateRestrictions).toHaveBeenCalledTimes(1);
   });
 });

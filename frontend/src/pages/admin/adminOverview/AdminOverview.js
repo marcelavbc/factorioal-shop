@@ -39,7 +39,7 @@ const AdminOverview = () => {
       <div className="admin-dashboard">
         <div className="admin-card">
           <h2>{stats.totalBicycles}</h2>
-          <p>Total Bicycles</p>
+          <p data-testId="total-bicycles">Total Bicycles</p>
           <Link to="/admin/bicycles" className="admin-btn">
             Manage Bicycles
           </Link>

@@ -27,18 +27,8 @@ const CartPage = () => {
 
         const data = await getCart(cartId);
         setCart(data);
-
-        const initialQuantities = {};
-        data.items.forEach((item) => {
-          initialQuantities[item._id] = item.quantity;
-        });
-        setEditingQuantities(initialQuantities);
-
-        if (data.cartId) {
-          localStorage.setItem("cartId", data.cartId);
-        }
-
         setCartItems(data.items.length);
+        setLoading(false);
       } catch (err) {
         setError("Failed to load cart data.");
       } finally {

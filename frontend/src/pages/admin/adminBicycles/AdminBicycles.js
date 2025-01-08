@@ -42,7 +42,6 @@ const AdminBicycles = () => {
         setBicycles(bicycleData);
         setPartOptions(groupPartOptions(partOptionData));
       } catch (err) {
-        console.error("Failed to fetch data:", err);
         setError("Failed to load data.");
       } finally {
         setLoading(false);
@@ -103,7 +102,7 @@ const AdminBicycles = () => {
       setShowModal(false);
       resetForm();
     } catch (err) {
-      toast.error("Failed to save bicycle."); // ✅ This is the key message we check in the test
+      toast.error("Failed to save bicycle.");
     }
   };
 

@@ -19,22 +19,20 @@ export const CartProvider = ({ children }) => {
     const fetchCart = async () => {
       try {
         const cartId = localStorage.getItem("cartId");
-        if (!cartId) return;
+
+        if (!cartId) {
+          return;
+        }
 
         const cart = await getCart(cartId);
-        //Calculate total quantity (sum of all item quantities)
+
         const totalQuantity = cart.items.reduce(
           (sum, item) => sum + item.quantity,
           0
         );
-        setCartItems(totalQuantity);
-      } catch (err) {
-        console.error("Error fetching cart:", err);
-      }
-    };
 
-    CartProvider.propTypes = {
-      children: PropTypes.node.isRequired,
+        setCartItems(totalQuantity);
+      } catch (err) {}
     };
 
     fetchCart();
@@ -43,4 +41,8 @@ export const CartProvider = ({ children }) => {
   const value = useMemo(() => ({ cartItems, setCartItems }), [cartItems]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+};
+
+CartProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

@@ -30,8 +30,6 @@ const BicyclePage = () => {
     const fetchBicycle = async () => {
       try {
         const data = await getBicycleById(id);
-        // console.log("🚀 Fetched bicycle data:", data); // ⬅️ Add this debug log
-
         setBicycle(data);
       } catch (err) {
         setError("Failed to load bicycle details.");
@@ -63,7 +61,6 @@ const BicyclePage = () => {
   // ✅ **Add to Cart with Valid Selections**
   const handleAddToCart = async () => {
     let cartId = localStorage.getItem("cartId");
-
     try {
       const payload = {
         cartId: cartId || undefined,
@@ -79,7 +76,6 @@ const BicyclePage = () => {
 
       const existingItem = currentCart.items.find((item) => {
         if (item.bicycle._id !== id) return false;
-
         if (item.options.length !== payload.options.length) return false;
         return item.options.every(
           (opt, index) =>
@@ -90,6 +86,7 @@ const BicyclePage = () => {
 
       if (existingItem) {
         const updatedQuantity = existingItem.quantity + parseInt(quantity, 10);
+
         await updateCartItem(cartId, existingItem._id, {
           quantity: updatedQuantity,
         });

@@ -18,7 +18,11 @@ const AdminModal = ({ show, onHide, title, children, onSave, isEditing }) => {
         <Button variant="secondary" onClick={onHide}>
           Close
         </Button>
-        <Button variant="primary" onClick={onSave}>
+        <Button
+          variant="primary"
+          onClick={onSave}
+          data-testid="modal-save-button"
+        >
           {isEditing ? "Update" : "Add"}
         </Button>
       </Modal.Footer>

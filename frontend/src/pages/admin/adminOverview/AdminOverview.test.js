@@ -2,16 +2,21 @@ import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import AdminOverview from "./AdminOverview";
-import { getBicycles, getPartOptions } from "../../../api/api";
+import * as api from "../../../api/api";
+import axios from "axios";
 
+jest.mock("axios");
 describe("AdminOverview Component", () => {
   beforeEach(() => {
+    jest.restoreAllMocks();
     jest.clearAllMocks();
   });
 
   it("renders loading spinner initially", async () => {
-    getBicycles.mockResolvedValue([]);
-    getPartOptions.mockResolvedValue([]);
+    jest.spyOn(api, "getBicycles");
+    jest.spyOn(api, "getPartOptions");
+
+    axios.get.mockResolvedValueOnce({ data: [] });
 
     render(
       <MemoryRouter>
@@ -25,16 +30,25 @@ describe("AdminOverview Component", () => {
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
     });
   });
+
   it("renders dashboard data when API call succeeds", async () => {
-    getBicycles.mockResolvedValue([
-      { _id: "bike-1", name: "Speedster" },
-      { _id: "bike-2", name: "Mountain King" },
-    ]);
-    getPartOptions.mockResolvedValue([
-      { _id: "option-1", category: "Frame", value: "Carbon" },
-      { _id: "option-2", category: "Brakes", value: "Disc" },
-      { _id: "option-3", category: "Frame", value: "Aluminum" },
-    ]);
+    jest.spyOn(api, "getBicycles");
+    jest.spyOn(api, "getPartOptions");
+
+    axios.get
+      .mockResolvedValueOnce({
+        data: [
+          { _id: "bike-1", name: "Speedster" },
+          { _id: "bike-2", name: "Mountain King" },
+        ],
+      })
+      .mockResolvedValueOnce({
+        data: [
+          { _id: "option-1", category: "Frame", value: "Carbon" },
+          { _id: "option-2", category: "Brakes", value: "Disc" },
+          { _id: "option-3", category: "Frame", value: "Aluminum" },
+        ],
+      });
 
     render(
       <MemoryRouter>
@@ -45,19 +59,27 @@ describe("AdminOverview Component", () => {
     await waitFor(() => {
       expect(screen.getByText("2")).toBeInTheDocument();
     });
+
     await waitFor(() => {
       expect(screen.getByText("Total Bicycles")).toBeInTheDocument();
     });
+
     await waitFor(() => {
       expect(screen.getByText("3")).toBeInTheDocument();
     });
+
     await waitFor(() => {
       expect(screen.getByText("Total Part Options")).toBeInTheDocument();
     });
   });
+
   it("shows an error message if API call fails", async () => {
-    getBicycles.mockRejectedValue(new Error("Failed to fetch bicycles"));
-    getPartOptions.mockRejectedValue(new Error("Failed to fetch part options"));
+    jest.spyOn(api, "getBicycles");
+    jest.spyOn(api, "getPartOptions");
+
+    axios.get
+      .mockRejectedValueOnce(new Error("Failed to fetch bicycles"))
+      .mockRejectedValueOnce(new Error("Failed to fetch part options"));
 
     render(
       <MemoryRouter>
@@ -71,36 +93,17 @@ describe("AdminOverview Component", () => {
       ).toBeInTheDocument();
     });
   });
-  it("displays the correct statistics from the API", async () => {
-    getBicycles.mockResolvedValue([
+  it("navigates to the Bicycles page when clicking 'Manage Bicycles'", async () => {
+    jest.spyOn(api, "getBicycles").mockResolvedValue([
       { _id: "bike-1", name: "Speedster" },
       { _id: "bike-2", name: "Mountain King" },
     ]);
-
-    getPartOptions.mockResolvedValue([
-      { _id: "frame-carbon", category: "Frame", value: "Carbon" },
-      { _id: "brakes-disc", category: "Brakes", value: "Disc" },
-      { _id: "frame-aluminum", category: "Frame", value: "Aluminum" },
+    jest.spyOn(api, "getPartOptions").mockResolvedValue([
+      { _id: "option-1", category: "Frame", value: "Carbon" },
+      { _id: "option-2", category: "Brakes", value: "Disc" },
+      { _id: "option-3", category: "Frame", value: "Aluminum" },
     ]);
 
-    render(
-      <MemoryRouter>
-        <AdminOverview />
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText("2")).toBeInTheDocument();
-    });
-    await waitFor(() => {
-      expect(screen.getByText("3")).toBeInTheDocument();
-    });
-
-    expect(screen.getByText("Total Bicycles")).toBeInTheDocument();
-    expect(screen.getByText("Total Part Options")).toBeInTheDocument();
-  });
-
-  it("navigates to the Bicycles page when clicking 'Manage Bicycles'", async () => {
     render(
       <MemoryRouter initialEntries={["/admin"]}>
         <Routes>
@@ -120,6 +123,16 @@ describe("AdminOverview Component", () => {
   });
 
   it("navigates to the Part Options page when clicking 'Manage Part Options'", async () => {
+    jest.spyOn(api, "getBicycles").mockResolvedValue([
+      { _id: "bike-1", name: "Speedster" },
+      { _id: "bike-2", name: "Mountain King" },
+    ]);
+    jest.spyOn(api, "getPartOptions").mockResolvedValue([
+      { _id: "option-1", category: "Frame", value: "Carbon" },
+      { _id: "option-2", category: "Brakes", value: "Disc" },
+      { _id: "option-3", category: "Frame", value: "Aluminum" },
+    ]);
+
     render(
       <MemoryRouter initialEntries={["/admin"]}>
         <Routes>
