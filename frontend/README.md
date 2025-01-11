@@ -1,70 +1,145 @@
-# Getting Started with Create React App
+# Bicycle Shop - Full Stack Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 📌 Overview
+The Bicycle Shop is a full-stack web application that allows users to browse, customize, and purchase bicycles. The application consists of a **React** frontend and an **Express.js / Node.js** backend, with **MongoDB** as the database. The system supports customizable bicycle parts, cart management, and an admin panel for managing products and restrictions.
 
-## Available Scripts
+## 🚀 Features
+### **Frontend (React.js)**
+- Browse bicycles with customization options.
+- Dynamic selection of bicycle parts with restriction validation.
+- Add bicycles with specific configurations to the cart.
+- Cart persistence using localStorage.
+- Admin panel to manage bicycle parts and restrictions.
+- Fully responsive UI with Bootstrap & SCSS.
+- Unit and integration testing using **Jest** and **React Testing Library**.
+- End-to-end testing setup with **Cypress**.
 
-In the project directory, you can run:
+### **Backend (Node.js, Express.js, MongoDB)**
+- RESTful API endpoints for bicycles, parts, and cart.
+- Validation for part compatibility using predefined restrictions.
+- CRUD operations for bicycles and parts.
+- Error handling and logging.
+- Secure database operations with **Mongoose ORM**.
 
-### `npm start`
+## 🛠️ Technologies Used
+### **Frontend**
+- React 18
+- React Router
+- Bootstrap 5
+- React Select
+- React Toastify
+- SCSS
+- Jest & React Testing Library (Unit & Integration tests)
+- Cypress (End-to-End tests)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### **Backend**
+- Node.js
+- Express.js
+- MongoDB with Mongoose
+- Dotenv for environment variables
+- Jest & Supertest for API testing
+- MongoDB Memory Server for isolated test database
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🏗️ Project Setup
 
-### `npm test`
+### **1️⃣ Backend Setup**
+```sh
+cd backend
+npm install
+```
+- **Environment Variables:** Create a `.env` file and add:
+  ```env
+  MONGO_URI=your_mongodb_connection_string
+  PORT=5001
+  ```
+- **Run the Server:**
+  ```sh
+  npm run dev
+  ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### **2️⃣ Frontend Setup**
+```sh
+cd frontend
+npm install
+```
+- **Run the Frontend:**
+  ```sh
+  npm start
+  ```
+- Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### `npm run build`
+## 🧪 Testing
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### **Unit & Integration Tests**
+#### **Backend**
+```sh
+cd backend
+npm test
+```
+#### **Frontend**
+```sh
+cd frontend
+npm test
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### **End-to-End (E2E) Tests with Cypress**
+```sh
+cd frontend
+npx cypress open
+```
+If Cypress can't connect, try:
+```sh
+npx cypress open --config baseUrl=http://127.0.0.1:3000
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 📂 Folder Structure
+```
+📦 bicycle-shop
+ ┣ 📂 backend
+ ┃ ┣ 📂 models
+ ┃ ┣ 📂 controllers
+ ┃ ┣ 📂 routes
+ ┃ ┣ 📂 tests
+ ┃ ┣ 📜 server.js
+ ┣ 📂 frontend
+ ┃ ┣ 📂 src
+ ┃ ┃ ┣ 📂 components
+ ┃ ┃ ┣ 📂 pages
+ ┃ ┃ ┣ 📂 api
+ ┃ ┃ ┣ 📂 tests
+ ┃ ┃ ┣ 📜 App.js
+ ┃ ┣ 📜 package.json
+ ┗ 📜 README.md
+```
 
-### `npm run eject`
+## 🚀 What We Developed
+✅ **Backend:**
+- API to handle bicycles, parts, and restrictions.
+- Validation for part compatibility.
+- Full test coverage for controllers & models.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+✅ **Frontend:**
+- Bicycle customization UI with restricted selections.
+- Admin panel to manage parts and restrictions.
+- Cart management with localStorage persistence.
+- Full unit and integration test coverage.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+✅ **Testing:**
+- Unit tests for both frontend & backend.
+- Cypress E2E tests for UI and API interactions.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 🌟 Future Enhancements
+- **User authentication** (Login & Signup)
+- **Order history** for users
+- **Payment integration** (Stripe/PayPal)
+- **Enhanced admin analytics**
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 🤝 Contributing
+Feel free to fork this project and submit a pull request!
 
-## Learn More
+## 📧 Contact
+If you have any questions, feel free to reach out!
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
+This project was built with ❤️ and **React + Node.js**!
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
