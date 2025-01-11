@@ -193,6 +193,7 @@ const AdminRestrictions = () => {
                         {loadingAction ? "Saving..." : "Edit"}
                       </button>
                       <button
+                        data-testid={`remove-restriction-${selectedOption.value}`}
                         className="btn btn-danger btn-sm"
                         onClick={() => handleRemoveRestriction(category)}
                         disabled={loadingAction}
@@ -226,55 +227,59 @@ const AdminRestrictions = () => {
           <label htmlFor="category" className="form-label">
             Restriction Category
           </label>
-          <Select
-            id="category-select"
-            inputId="category-select"
-            aria-label="Restriction Category"
-            data-testid="category-select"
-            options={Object.keys(partOptions).map((cat) => ({
-              value: cat,
-              label: cat,
-            }))}
-            onChange={(selected) =>
-              setNewRestriction((prev) => ({
-                ...prev,
-                category: selected.value,
-              }))
-            }
-            value={
-              newRestriction.category
-                ? {
-                    value: newRestriction.category,
-                    label: newRestriction.category,
-                  }
-                : null
-            }
-            isDisabled={editingRestriction}
-            placeholder="Select Category"
-          />
+          <div data-testid="categories-select">
+            <Select
+              id="category-select"
+              inputId="category-select"
+              aria-label="Restriction Category"
+              data-testid="category-select"
+              options={Object.keys(partOptions).map((cat) => ({
+                value: cat,
+                label: cat,
+              }))}
+              onChange={(selected) =>
+                setNewRestriction((prev) => ({
+                  ...prev,
+                  category: selected.value,
+                }))
+              }
+              value={
+                newRestriction.category
+                  ? {
+                      value: newRestriction.category,
+                      label: newRestriction.category,
+                    }
+                  : null
+              }
+              isDisabled={editingRestriction}
+              placeholder="Select Category"
+            />
+          </div>
         </div>
         <div className="mb-3">
           <label htmlFor="values" className="form-label">
             Restricted Values
           </label>
-          <Select
-            data-testid="values-select" // ✅ Add test id for easier selection
-            id="values-select"
-            inputId="values-select"
-            aria-label="Restricted Values" // ✅ Accessibility improvement
-            options={(partOptions[newRestriction.category] || []).map(
-              (opt) => ({ value: opt.value, label: opt.value })
-            )}
-            isMulti
-            onChange={(selected) =>
-              setNewRestriction((prev) => ({
-                ...prev,
-                values: selected.map((s) => s.value),
-              }))
-            }
-            value={newRestriction.values.map((v) => ({ value: v, label: v }))}
-            placeholder="Select Restricted Values"
-          />
+          <div data-testid="values-select-dropdown">
+            <Select
+              data-testid="values-select"
+              id="values-select"
+              inputId="values-select"
+              aria-label="Restricted Values"
+              options={(partOptions[newRestriction.category] || []).map(
+                (opt) => ({ value: opt.value, label: opt.value })
+              )}
+              isMulti
+              onChange={(selected) =>
+                setNewRestriction((prev) => ({
+                  ...prev,
+                  values: selected.map((s) => s.value),
+                }))
+              }
+              value={newRestriction.values.map((v) => ({ value: v, label: v }))}
+              placeholder="Select Restricted Values"
+            />
+          </div>
         </div>
       </AdminModal>
     </div>

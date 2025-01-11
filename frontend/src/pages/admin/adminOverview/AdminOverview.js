@@ -38,14 +38,14 @@ const AdminOverview = () => {
       <h1>Admin Overview</h1>
       <div className="admin-dashboard">
         <div className="admin-card">
-          <h2>{stats.totalBicycles}</h2>
+          <h2 data-testId="total-bikes-value">{stats.totalBicycles}</h2>
           <p data-testId="total-bicycles">Total Bicycles</p>
           <Link to="/admin/bicycles" className="admin-btn">
             Manage Bicycles
           </Link>
         </div>
         <div className="admin-card">
-          <h2>{stats.totalPartOptions}</h2>
+          <h2 data-testId="total-parts-value">{stats.totalPartOptions}</h2>
           <p>Total Part Options</p>
           <Link to="/admin/part-options" className="admin-btn">
             Manage Part Options

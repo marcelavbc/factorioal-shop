@@ -1,0 +1,22 @@
+{
+  "cartId": "657a50d40d567747ae89f130",
+  "items": [
+    {
+      "_id": "657a50d40d567747ae89f131",
+      "bicycle": {
+        "_id": "677a50d40d567747ae89f130",
+        "name": "Test Bicycle",
+        "description": "Perfect for off-road adventures.",
+        "price": 1200,
+        "image": "https://plus.unsplash.com/premium_photo-1684096758573-cd4acd2a12c4?q=80&w=1925&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      },
+      "options": [
+        { "category": "Frame Type", "value": "Full Suspension" },
+        { "category": "Frame Finish", "value": "Matte" }
+      ],
+      "quantity": 2
+    }
+  ],
+  "totalQuantity": 2,
+  "totalPrice": 2400
+}

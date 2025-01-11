@@ -143,7 +143,6 @@ const BicyclePage = () => {
     });
   };
 
-  // ✅ **Render Options with Restrictions**
   const renderOptions = (category, values) => {
     if (!values || values.length === 0) return null;
 
@@ -178,8 +177,8 @@ const BicyclePage = () => {
       <div key={category} className="option-group">
         <label id={`label-${category.replace(/\s+/g, "-")}`}>{category}:</label>
         <Select
-          inputId={`select-${category.replace(/\s+/g, "-")}`} // ✅ Assign ID for accessibility
-          aria-labelledby={`label-${category.replace(/\s+/g, "-")}`} // ✅ Link label and input
+          inputId={`select-${category.replace(/\s+/g, "-")}`}
+          aria-labelledby={`label-${category.replace(/\s+/g, "-")}`}
           options={options}
           onChange={(selectedOption) =>
             handleRestrictions(category, selectedOption.value)
@@ -191,6 +190,7 @@ const BicyclePage = () => {
           isSearchable={false}
           className="react-select-container"
           classNamePrefix="react-select"
+          data-testid={`select-test-${category.replace(/\s+/g, "-")}`}
         />
       </div>
     );

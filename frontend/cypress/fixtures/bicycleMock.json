@@ -1,0 +1,78 @@
+{
+  "_id": "677a50d40d567747ae89f130",
+  "name": "Mountain Explorer",
+  "description": "A rugged bike for adventure trails.",
+  "price": 1100,
+  "image": "https://images.unsplash.com/photo-1528629297340-d1d466945dc5?q=80&w=2122&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "options": [
+    {
+      "category": "Frame Type",
+      "values": [
+        {
+          "value": "Full Suspension",
+          "stock": "in_stock",
+          "restrictions": {
+            "Frame Finish": ["Shiny"]
+          }
+        },
+        {
+          "value": "Hardtail",
+          "stock": "in_stock",
+          "restrictions": {}
+        }
+      ]
+    },
+    {
+      "category": "Frame Finish",
+      "values": [
+        {
+          "value": "Matte",
+          "stock": "in_stock",
+          "restrictions": {}
+        },
+        {
+          "value": "Shiny",
+          "stock": "in_stock",
+          "restrictions": {}
+        }
+      ]
+    }
+  ],
+  "partOptions": [
+    {
+      "category": "Wheel Size",
+      "values": [
+        {
+          "value": "26 inches",
+          "stock": "in_stock",
+          "restrictions": {}
+        },
+        {
+          "value": "27.5 inches",
+          "stock": "in_stock",
+          "restrictions": {}
+        },
+        {
+          "value": "29 inches",
+          "stock": "in_stock",
+          "restrictions": {}
+        }
+      ]
+    },
+    {
+      "category": "Brake Type",
+      "values": [
+        {
+          "value": "Disc",
+          "stock": "in_stock",
+          "restrictions": {}
+        },
+        {
+          "value": "Rim",
+          "stock": "in_stock",
+          "restrictions": {}
+        }
+      ]
+    }
+  ]
+}

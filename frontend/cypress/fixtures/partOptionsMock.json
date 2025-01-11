@@ -1,0 +1,53 @@
+[
+  {
+    "_id": "60e71b3e8b3a1c001c8d1c01",
+    "category": "Frame Type",
+    "value": "Full Suspension",
+    "stock": "in_stock",
+    "restrictions": {
+      "Wheels": ["Mountain Wheels"]
+    }
+  },
+  {
+    "_id": "60e71b3e8b3a1c001c8d1c02",
+    "category": "Frame Type",
+    "value": "Diamond",
+    "stock": "in_stock",
+    "restrictions": {}
+  },
+  {
+    "_id": "60e71b3e8b3a1c001c8d1c03",
+    "category": "Wheels",
+    "value": "Mountain Wheels",
+    "stock": "in_stock",
+    "restrictions": {}
+  },
+  {
+    "_id": "60e71b3e8b3a1c001c8d1c04",
+    "category": "Wheels",
+    "value": "Road Wheels",
+    "stock": "in_stock",
+    "restrictions": {}
+  },
+  {
+    "_id": "60e71b3e8b3a1c001c8d1c05",
+    "category": "Rim Color",
+    "value": "Red",
+    "stock": "in_stock",
+    "restrictions": {}
+  },
+  {
+    "_id": "60e71b3e8b3a1c001c8d1c06",
+    "category": "Rim Color",
+    "value": "Black",
+    "stock": "in_stock",
+    "restrictions": {}
+  },
+  {
+    "_id": "60e71b3e8b3a1c001c8d1c07",
+    "category": "Chain",
+    "value": "8-Speed Chain",
+    "stock": "in_stock",
+    "restrictions": {}
+  }
+]

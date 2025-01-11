@@ -181,6 +181,7 @@ const AdminParts = () => {
                             ? "in-stock"
                             : "out-of-stock"
                         }`}
+                        data-testid={`toggle-stock-${option._id}`}
                         onClick={() =>
                           handleToggleStock(option._id, category, option.stock)
                         }
@@ -190,6 +191,7 @@ const AdminParts = () => {
                           : "Mark as In Stock"}
                       </button>
                       <button
+                        data-testid={`delete-${option._id}`}
                         className="btn btn-danger btn-sm"
                         onClick={() => handleDeleteOption(option._id, category)}
                       >
