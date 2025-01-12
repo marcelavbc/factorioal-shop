@@ -37,7 +37,6 @@ const AdminParts = () => {
 
         setPartOptions(groupedOptions);
       } catch (err) {
-        console.error("Failed to fetch part options:", err);
         setError("Failed to load part options.");
       } finally {
         setLoading(false);
@@ -69,10 +68,9 @@ const AdminParts = () => {
     }
 
     try {
-      // ✅ Include `value` field in the request
       const addedOption = await createPartOption({
         category: selectedCategory,
-        value, // Fix: Ensure value is included
+        value,
         stock,
       });
 
@@ -98,7 +96,7 @@ const AdminParts = () => {
       await deletePartOption(id);
 
       setPartOptions((prev) => {
-        if (!prev[category]) return prev; // 🛑 Ensure category exists
+        if (!prev[category]) return prev;
 
         const updatedOptions = prev[category].filter(
           (option) => option._id !== id
@@ -106,13 +104,12 @@ const AdminParts = () => {
 
         return {
           ...prev,
-          [category]: updatedOptions.length > 0 ? updatedOptions : undefined, // Remove category if empty
+          [category]: updatedOptions.length > 0 ? updatedOptions : undefined,
         };
       });
 
       toast.success("Part option deleted successfully!");
     } catch (err) {
-      console.error("Failed to delete part option:", err);
       toast.error("Failed to delete part option.");
     }
   };

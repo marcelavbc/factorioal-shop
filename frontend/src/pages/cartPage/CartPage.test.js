@@ -72,7 +72,7 @@ describe("CartPage", () => {
       </CartProvider>
     );
 
-    expect(screen.getByRole("status")).toBeInTheDocument(); // Check if spinner is present
+    expect(screen.getByRole("status")).toBeInTheDocument();
   });
   it("displays an error message when cart API fails", async () => {
     getCart.mockRejectedValue(new Error("Network error"));
@@ -184,16 +184,13 @@ describe("CartPage", () => {
       expect(screen.getByText("Your Cart")).toBeInTheDocument();
     });
 
-    // Simulate entering an invalid quantity (0)
     const quantityInput = screen.getByLabelText("Quantity:");
     fireEvent.change(quantityInput, { target: { value: "0" } });
 
-    // Get the "Save" button
     const saveButton = screen.getByText("Save");
 
     expect(quantityInput).not.toHaveValue("0");
 
-    // "Save" button remains disabled
     expect(saveButton).toBeDisabled();
 
     expect(updateCartItem).not.toHaveBeenCalled();

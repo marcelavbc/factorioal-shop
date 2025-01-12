@@ -129,7 +129,7 @@ describe("AdminRestrictions Component", () => {
 
   it("removes a restriction when 'Remove' button is clicked", async () => {
     jest.spyOn(api, "getPartOptions");
-    jest.spyOn(api, "updateRestrictions").mockResolvedValue({ success: true }); // ✅ Ensure updateRestrictions is mocked
+    jest.spyOn(api, "updateRestrictions").mockResolvedValue({ success: true });
 
     axios.get.mockResolvedValueOnce({
       data: [
@@ -159,7 +159,7 @@ describe("AdminRestrictions Component", () => {
     fireEvent.click(screen.getByRole("button", { name: /remove/i }));
 
     await waitFor(() => {
-      expect(api.updateRestrictions).toHaveBeenCalledWith("frame-1", {}); // ✅ Ensure updateRestrictions was called
+      expect(api.updateRestrictions).toHaveBeenCalledWith("frame-1", {});
     });
 
     await waitFor(() => {

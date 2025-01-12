@@ -39,7 +39,6 @@ const AdminRestrictions = () => {
         }, {});
         setPartOptions(groupedOptions);
       } catch (err) {
-        console.error("Failed to fetch part options:", err);
         setError("Failed to load part options.");
       } finally {
         setLoading(false);

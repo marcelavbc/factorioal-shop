@@ -7,13 +7,11 @@ beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
 
-  // Disconnect any existing connections
   if (mongoose.connection.readyState !== 0) {
     await mongoose.disconnect();
   }
 
-  // Connect to the in-memory MongoDB server
-  global.__MONGO_URI__ = uri; // Make the URI globally available for tests
+  global.__MONGO_URI__ = uri;
   await mongoose.connect(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,

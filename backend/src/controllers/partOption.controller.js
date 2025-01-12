@@ -6,7 +6,7 @@ exports.addOption = async (req, res) => {
   try {
     const { category, value, stock, restrictions } = req.body;
 
-    // 🔥 Check if part option already exists
+    //Check if part option already exists
     const existingOption = await PartOption.findOne({ category, value });
     if (existingOption) {
       return res.status(400).json({ message: "Part option already exists" });
@@ -60,13 +60,11 @@ exports.removeOption = async (req, res) => {
 };
 
 // Update a part option
-
 exports.updatePartOption = async (req, res) => {
   try {
     const { id } = req.params;
     const { category, value, stock } = req.body;
 
-    // 🔥 Check if `id` is a valid MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid part option ID" });
     }
@@ -76,7 +74,7 @@ exports.updatePartOption = async (req, res) => {
       return res.status(404).json({ message: "Part option not found" });
     }
 
-    // 🔥 Validate fields BEFORE updating
+    // Validate fields BEFORE updating
     if (
       (category !== undefined && category.trim() === "") ||
       (value !== undefined && value.trim() === "")
@@ -99,7 +97,7 @@ exports.updatePartOption = async (req, res) => {
   }
 };
 
-// ✅ Update Restrictions
+// Update Restrictions
 exports.updateRestrictions = async (req, res) => {
   try {
     const { id } = req.params;
@@ -139,12 +137,10 @@ exports.getPartOptions = async (req, res) => {
 };
 
 // Delete a part option by ID
-
 exports.deletePartOption = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // 🔥 Validate ObjectId format before querying
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid part option ID" });
     }

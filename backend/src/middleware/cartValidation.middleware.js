@@ -4,7 +4,6 @@ const validateCartItem = async (req, res, next) => {
   const { options } = req.body;
 
   try {
-    // 🔥 Ensure `options` field exists
     if (!options) {
       return res
         .status(400)
@@ -18,7 +17,6 @@ const validateCartItem = async (req, res, next) => {
     }
 
     for (const option of options) {
-      // Find the selected option in the database
       const partOption = await PartOption.findOne({
         category: option.category,
         value: option.value,
@@ -36,7 +34,6 @@ const validateCartItem = async (req, res, next) => {
         });
       }
 
-      // 🔥 Check for **actual** restrictions
       if (
         partOption.restrictions &&
         Object.keys(partOption.restrictions).length > 0

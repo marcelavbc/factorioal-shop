@@ -1,6 +1,5 @@
 import "@testing-library/jest-dom";
 
-// ✅ Mock LocalStorage
 Object.defineProperty(window, "localStorage", {
   value: {
     getItem: jest.fn(() => null),

@@ -20,7 +20,6 @@ beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
 
-  // Set up Express app BEFORE database connection
   app = express();
   app.use(bodyParser.json());
   app.use("/cart", cartRoutes);
@@ -30,7 +29,6 @@ beforeAll(async () => {
     useUnifiedTopology: true,
   });
 
-  // Ensure MongoDB is ready before running tests
   await new Promise((resolve) => setTimeout(resolve, 1000));
 });
 
@@ -57,7 +55,7 @@ describe("Cart Controllers", () => {
     });
     const partOptionFrameCarbon = await PartOption.create({
       category: "Frame",
-      value: "Carbon", // ✅ Add this to the database
+      value: "Carbon",
       stock: "in_stock",
     });
 

@@ -4,7 +4,9 @@ import { MemoryRouter } from "react-router-dom";
 import BicyclePage from "./BicyclePage";
 import { getBicycleById, addToCart, getCart } from "../../api/api";
 import { ToastContainer } from "react-toastify";
+
 const mockNavigate = jest.fn();
+
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: () => mockNavigate,
@@ -16,6 +18,7 @@ jest.mock("../../context/CartContext", () => ({
     setCartItems: jest.fn(),
   })),
 }));
+
 jest.mock("../../api/api", () => ({
   getBicycleById: jest.fn(),
   addToCart: jest.fn(),
@@ -272,16 +275,16 @@ describe("BicyclePage Component", () => {
 
     await screen.findByText("Fat Tire Pro");
 
-    // ✅ Select "Fat Bike Wheels"
+    // Select "Fat Bike Wheels"
     const wheelsDropdown = await screen.findByLabelText(/Wheels:/i);
     fireEvent.mouseDown(wheelsDropdown);
     fireEvent.click(screen.getByText("Fat Bike Wheels"));
 
-    // ✅ Open Rim Color dropdown
+    // Open Rim Color dropdown
     const rimColorDropdown = await screen.findByLabelText(/Rim Color:/i);
     fireEvent.mouseDown(rimColorDropdown);
 
-    // ✅ Ensure "Red" is NOT present
+    // Ensure "Red" is NOT present
     await waitFor(() => {
       expect(screen.queryByText("Red")).not.toBeInTheDocument();
     });
@@ -296,17 +299,17 @@ describe("BicyclePage Component", () => {
 
     await screen.findByText("Fat Tire Pro");
 
-    // ✅ Select "Red" Rim Color first
+    // Select "Red" Rim Color first
     const rimColorDropdown = await screen.findByLabelText(/Rim Color:/i);
     fireEvent.mouseDown(rimColorDropdown);
     fireEvent.click(screen.getByText("Red"));
 
-    // ✅ Select "Fat Bike Wheels"
+    // Select "Fat Bike Wheels"
     const wheelsDropdown = await screen.findByLabelText(/Wheels:/i);
     fireEvent.mouseDown(wheelsDropdown);
     fireEvent.click(screen.getByText("Fat Bike Wheels"));
 
-    // ✅ Ensure wheels selection is reset
+    // Ensure wheels selection is reset
     await waitFor(() => {
       // Check if no option is selected
       expect(
@@ -316,7 +319,6 @@ describe("BicyclePage Component", () => {
       ).not.toBeInTheDocument();
     });
 
-    // ✅ Ensure error message appears
     await waitFor(() => {
       expect(
         screen.getByText(
@@ -335,24 +337,24 @@ describe("BicyclePage Component", () => {
 
     await screen.findByText("Fat Tire Pro");
 
-    // ✅ Select "Red" Rim Color first
+    // Select "Red" Rim Color first
     const rimColorDropdown = await screen.findByLabelText(/Rim Color:/i);
     fireEvent.mouseDown(rimColorDropdown);
     fireEvent.click(screen.getByText("Red"));
 
-    // ✅ Select "Fat Bike Wheels" (which should reset Rim Color)
+    // Select "Fat Bike Wheels" (which should reset Rim Color)
     const wheelsDropdown = await screen.findByLabelText(/Wheels:/i);
     fireEvent.mouseDown(wheelsDropdown);
     fireEvent.click(screen.getByText("Fat Bike Wheels"));
 
-    // ✅ Ensure Rim Color selection is reset
+    // Ensure Rim Color selection is reset
     await waitFor(() => {
       expect(
         screen.queryByText("Red", { selector: ".css-1uccc91-singleValue" })
       ).not.toBeInTheDocument();
     });
 
-    // ✅ Ensure error message appears
+    // Ensure error message appears
     await waitFor(() => {
       expect(
         screen.getByText(
@@ -371,21 +373,21 @@ describe("BicyclePage Component", () => {
 
     await screen.findByText("Fat Tire Pro");
 
-    // ✅ Select "Fat Bike Wheels"
+    // Select "Fat Bike Wheels"
     const wheelsDropdown = await screen.findByLabelText(/Wheels:/i);
     fireEvent.mouseDown(wheelsDropdown);
     fireEvent.click(screen.getByText("Fat Bike Wheels"));
 
-    // ✅ Open Rim Color dropdown
+    // Open Rim Color dropdown
     const rimColorDropdown = await screen.findByLabelText(/Rim Color:/i);
     fireEvent.mouseDown(rimColorDropdown);
 
-    // ✅ Ensure "Red" is NOT present in the dropdown list
+    // Ensure "Red" is NOT present in the dropdown list
     await waitFor(() => {
       expect(screen.queryByText("Red")).not.toBeInTheDocument();
     });
 
-    // ✅ Ensure other colors (e.g., "Black" and "Blue") are still available
+    // Ensure other colors (e.g., "Black" and "Blue") are still available
     expect(screen.getByText("Black")).toBeInTheDocument();
     expect(screen.getByText("Blue")).toBeInTheDocument();
   });
@@ -400,17 +402,17 @@ describe("BicyclePage Component", () => {
 
     await screen.findByText("Fat Tire Pro");
 
-    // ✅ Select "Red" Rim Color
+    // Select "Red" Rim Color
     const rimColorDropdown = await screen.findByLabelText(/Rim Color:/i);
     fireEvent.mouseDown(rimColorDropdown);
     fireEvent.click(screen.getByText("Red"));
 
-    // ✅ Select "Fat Bike Wheels"
+    // Select "Fat Bike Wheels"
     const wheelsDropdown = await screen.findByLabelText(/Wheels:/i);
     fireEvent.mouseDown(wheelsDropdown);
     fireEvent.click(screen.getByText("Fat Bike Wheels"));
 
-    // ✅ Ensure toast message appears
+    // Ensure toast message appears
     await waitFor(() => {
       expect(
         screen.getByText(
@@ -452,10 +454,8 @@ describe("BicyclePage Component", () => {
       </MemoryRouter>
     );
 
-    // ✅ Wait for the bike details to load
     await screen.findByText("Fat Tire Pro");
 
-    // ✅ Select customization options
     fireEvent.mouseDown(screen.getByLabelText(/Frame Finish/i));
     fireEvent.click(screen.getByText("Matte"));
 
@@ -534,7 +534,6 @@ describe("BicyclePage Component", () => {
 
     await screen.findByText("Fat Tire Pro");
 
-    // ✅ Fill in required selections
     fireEvent.mouseDown(screen.getByLabelText(/Frame Finish/i));
     fireEvent.click(screen.getByText("Matte"));
 
@@ -554,7 +553,6 @@ describe("BicyclePage Component", () => {
       name: /add to cart/i,
     });
 
-    // ✅ Click "Add to Cart"
     fireEvent.click(addToCartButton);
 
     await waitFor(() => {

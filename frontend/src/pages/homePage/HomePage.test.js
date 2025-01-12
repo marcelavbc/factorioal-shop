@@ -79,7 +79,7 @@ describe("HomePage Component", () => {
   });
 
   it("shows 'No bicycles available' if API returns an empty list", async () => {
-    jest.spyOn(api, "getBicycles").mockResolvedValue([]); // Mock empty response
+    jest.spyOn(api, "getBicycles").mockResolvedValue([]);
 
     render(
       <MemoryRouter>

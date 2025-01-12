@@ -20,7 +20,6 @@ const AdminOverview = () => {
           totalPartOptions: partOptions.length,
         });
       } catch (err) {
-        console.error("Error fetching stats:", err);
         setError("Failed to load dashboard statistics.");
       } finally {
         setLoading(false);

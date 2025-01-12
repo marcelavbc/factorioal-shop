@@ -315,7 +315,7 @@ const AdminBicycles = () => {
                 </div>
               ))
             ) : (
-              <p>No part options available.</p> // Prevents crashes
+              <p>No part options available.</p>
             )}
           </div>
         </div>

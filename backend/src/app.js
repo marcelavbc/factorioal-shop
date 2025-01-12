@@ -11,21 +11,18 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Connect to MongoDB
 connectDB();
 
 // Routes
-
 const bicycleRoutes = require("./routes/bicycle.routes");
-app.use("/api/bicycles", bicycleRoutes); // Bicycle routes
+app.use("/api/bicycles", bicycleRoutes);
 
 const cartRoutes = require("./routes/cart.routes");
-app.use("/api/cart", cartRoutes); // Cart routes
+app.use("/api/cart", cartRoutes);
 
 const partOptionRoutes = require("./routes/partOption.routes");
-app.use("/api/part-options", partOptionRoutes); // Part options routes
+app.use("/api/part-options", partOptionRoutes);
 
-// Root route
 app.get("/", (req, res) => {
   res.send("Bicycle Shop API is running...");
 });

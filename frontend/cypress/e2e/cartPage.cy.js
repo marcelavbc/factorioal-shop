@@ -72,14 +72,11 @@ describe("Cart Page", () => {
       body: { ...this.cartData, items: this.cartData.items.slice(1) },
     }).as("removeFromCart");
 
-    // Click remove button
     cy.get(".btn-danger").contains("Remove").click();
     cy.wait("@removeFromCart");
 
-    // Toast notification should appear
     cy.contains("Item removed from cart!").should("be.visible");
 
-    // Item should no longer be in the cart
     cy.contains(item.bicycle.name).should("not.exist");
   });
 

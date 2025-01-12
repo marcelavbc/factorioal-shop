@@ -29,10 +29,9 @@ const CartPage = () => {
         setCart(data);
         setCartItems(data.items.length);
 
-        // ✅ Initialize `editingQuantities` based on fetched cart items
         const initialQuantities = {};
         data.items.forEach((item) => {
-          initialQuantities[item._id] = item.quantity; // Set input value to existing quantity
+          initialQuantities[item._id] = item.quantity;
         });
         setEditingQuantities(initialQuantities);
 

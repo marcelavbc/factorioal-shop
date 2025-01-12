@@ -9,7 +9,7 @@ const bicycleRoutes = require("../../routes/bicycle.routes");
 
 let mongoServer;
 let app;
-let testBicycle; // ✅ Declare here
+let testBicycle;
 
 beforeAll(async () => {
   if (mongoose.connection.readyState === 1) {
@@ -19,7 +19,6 @@ beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
 
-  // ✅ Setup Express BEFORE connecting to MongoDB
   app = express();
   app.use(bodyParser.json());
   app.use("/bicycles", bicycleRoutes);
@@ -29,7 +28,6 @@ beforeAll(async () => {
     useUnifiedTopology: true,
   });
 
-  // ✅ Ensure MongoDB is fully connected before running tests
   await new Promise((resolve) => setTimeout(resolve, 1000));
 });
 
@@ -50,7 +48,6 @@ describe("Bicycle Controllers", () => {
   let partOption1, partOption2;
 
   beforeEach(async () => {
-    // ✅ Create PartOptions
     partOption1 = await PartOption.create({
       category: "Frame",
       value: "Carbon",
@@ -64,7 +61,6 @@ describe("Bicycle Controllers", () => {
       restrictions: new Map([["Frame", ["Steel"]]]),
     });
 
-    // ✅ Create Bicycle for testing
     testBicycle = await Bicycle.create({
       name: "Test Bike",
       description: "A test bicycle",
@@ -110,7 +106,7 @@ describe("Bicycle Controllers", () => {
     expect(res.body.partOptions.length).toBe(2);
   });
   it("should not create a bicycle with invalid part options", async () => {
-    const invalidId = new mongoose.Types.ObjectId(); // Random invalid ID
+    const invalidId = new mongoose.Types.ObjectId();
     const res = await request(app)
       .post("/bicycles")
       .send({
@@ -131,7 +127,7 @@ describe("Bicycle Controllers", () => {
         description: "Updated description",
         price: 1100,
         image: "https://example.com/updated-bike.jpg",
-        partOptions: [partOption1._id], // Change part options
+        partOptions: [partOption1._id],
       });
 
     expect(res.status).toBe(200);

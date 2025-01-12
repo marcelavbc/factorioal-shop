@@ -97,7 +97,6 @@ exports.removeFromCart = async (req, res) => {
     cart.items = cart.items.filter((item) => item._id.toString() !== itemId);
 
     await cart.save();
-    // Fetch the updated cart with populated bicycle details
     const updatedCart = await Cart.findById(cartId).populate({
       path: "items.bicycle",
       select: "name price image",
@@ -114,7 +113,7 @@ exports.removeFromCart = async (req, res) => {
 
 // Update a cart item
 exports.updateCartItem = async (req, res) => {
-  const { cartId } = req.query; // Expect `cartId` from the query params
+  const { cartId } = req.query;
   const { id: itemId } = req.params;
   const { quantity } = req.body;
 
@@ -144,7 +143,7 @@ exports.updateCartItem = async (req, res) => {
 
     // Update the quantity
     item.quantity = quantity;
-    await cart.save(); // Save updated cart
+    await cart.save();
 
     res.status(200).json(cart);
   } catch (err) {

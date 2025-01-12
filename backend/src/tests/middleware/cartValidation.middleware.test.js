@@ -17,7 +17,6 @@ beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
 
-  // Set up Express app BEFORE database connection
   app = express();
   app.use(bodyParser.json());
 
@@ -26,10 +25,8 @@ beforeAll(async () => {
     useUnifiedTopology: true,
   });
 
-  // Ensure MongoDB is ready before running tests
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // ✅ Create a test route to use the middleware
   app.post("/test-cart", validateCartItem, (req, res) => {
     res.status(200).json({ message: "Cart item is valid" });
   });
@@ -128,7 +125,6 @@ describe("validateCartItem Middleware", () => {
   });
 
   it("should handle unexpected errors gracefully", async () => {
-    // Simulate an error by disconnecting MongoDB
     await mongoose.disconnect();
 
     const res = await request(app)
@@ -140,7 +136,6 @@ describe("validateCartItem Middleware", () => {
     expect(res.status).toBe(500);
     expect(res.body.message).toBe("Validation failed");
 
-    // Reconnect MongoDB for other tests
     await mongoose.connect(mongoServer.getUri(), {
       useNewUrlParser: true,
       useUnifiedTopology: true,

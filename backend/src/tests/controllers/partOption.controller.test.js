@@ -18,7 +18,6 @@ beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
 
-  // Set up Express app BEFORE database connection
   app = express();
   app.use(bodyParser.json());
   app.use("/part-options", partOptionRoutes);
@@ -28,7 +27,6 @@ beforeAll(async () => {
     useUnifiedTopology: true,
   });
 
-  // Ensure MongoDB is ready before running tests
   await new Promise((resolve) => setTimeout(resolve, 1000));
 });
 
@@ -126,7 +124,6 @@ describe("PartOption Controllers", () => {
     expect(res.status).toBe(200);
     expect(res.body.message).toBe("Part option removed successfully");
 
-    // Verify it's gone
     const check = await PartOption.findById(testPartOption._id);
     expect(check).toBeNull();
   });

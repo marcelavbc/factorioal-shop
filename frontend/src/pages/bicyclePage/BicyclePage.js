@@ -47,7 +47,6 @@ const BicyclePage = () => {
     }
   };
 
-  // ✅ **Ensure all required selections are made**
   const isFormValid = () => {
     return (
       quantity !== "" &&
@@ -58,7 +57,6 @@ const BicyclePage = () => {
     );
   };
 
-  // ✅ **Add to Cart with Valid Selections**
   const handleAddToCart = async () => {
     let cartId = localStorage.getItem("cartId");
     try {
@@ -110,7 +108,6 @@ const BicyclePage = () => {
     }
   };
 
-  // ✅ **Handle Restrictions (Previously handleAllowedParts)**
   const handleRestrictions = (category, selectedValue) => {
     setCustomization((prevCustomization) => {
       const newCustomization = {

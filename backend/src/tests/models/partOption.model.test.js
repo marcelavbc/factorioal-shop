@@ -55,7 +55,6 @@ describe("PartOption Model", () => {
     expect(savedPartOption.value).toBe("Disc Brakes");
     expect(savedPartOption.stock).toBe("in_stock");
 
-    // Check restrictions map
     expect(savedPartOption.restrictions.get("Frame")).toEqual([
       "Carbon",
       "Steel",
@@ -83,7 +82,7 @@ describe("PartOption Model", () => {
     const partOption = new PartOption({
       category: "Frame",
       value: "Aluminum",
-      stock: "unknown_stock", // Invalid value
+      stock: "unknown_stock",
     });
 
     try {
