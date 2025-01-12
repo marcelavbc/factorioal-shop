@@ -66,7 +66,8 @@ npm install
   ```sh
   npm start
   ```
-- Open [http://localhost:3000](http://localhost:3000) in your browser.
+- **Open** [http://localhost:3000](http://localhost:3000) in your browser.
+- **Admin Panel:** Access the admin panel at [http://localhost:3000/admin](http://localhost:3000/admin).
 
 ## 🧪 Testing
 
@@ -96,20 +97,18 @@ npx cypress open --config baseUrl=http://127.0.0.1:3000
 ```
 📦 bicycle-shop
  ┣ 📂 backend
- ┃ ┣ 📂 models
- ┃ ┣ 📂 controllers
- ┃ ┣ 📂 routes
- ┃ ┣ 📂 tests
- ┃ ┣ 📜 server.js
+ | ┣ 📂 src
+ ┃ ┣ ┣ 📂 controllers
+ ┃ ┣ ┣ 📂 middleware
+ ┃ ┣ ┣ 📂 models
+ ┃ ┣ ┣ 📂 routes
+ ┃ ┣ ┣ 📂 tests
  ┣ 📂 frontend
  ┃ ┣ 📂 src
- ┃ ┃ ┣ 📂 components
- ┃ ┃ ┣ 📂 pages
  ┃ ┃ ┣ 📂 api
- ┃ ┃ ┣ 📂 tests
- ┃ ┃ ┣ 📜 App.js
- ┃ ┣ 📜 package.json
- ┗ 📜 README.md
+ ┃ ┃ ┣ 📂 components
+ ┃ ┃ ┣ 📂 context
+ ┃ ┃ ┣ 📂 pages
 ```
 
 ## 🚀 What We Developed
@@ -128,18 +127,8 @@ npx cypress open --config baseUrl=http://127.0.0.1:3000
 - Unit tests for both frontend & backend.
 - Cypress E2E tests for UI and API interactions.
 
-## 🌟 Future Enhancements
-- **User authentication** (Login & Signup)
-- **Order history** for users
-- **Payment integration** (Stripe/PayPal)
-- **Enhanced admin analytics**
-
-## 🤝 Contributing
-Feel free to fork this project and submit a pull request!
-
 ## 📧 Contact
-If you have any questions, feel free to reach out!
+If you have any questions, feel free to reach me out!
 
----
-This project was built with ❤️ and **React + Node.js**!
+Marcela Vilas Boas
 
