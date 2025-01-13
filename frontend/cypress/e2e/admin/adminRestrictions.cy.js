@@ -115,12 +115,7 @@ describe("Admin Restrictions Page", () => {
       .click();
 
     cy.wait("@updateRestrictions", { timeout: 10000 }).then((interceptions) => {
-      console.log("Captured Intercept:", interceptions);
       expect(interceptions.response.statusCode).to.eq(200);
-    });
-
-    cy.get("@updateRestrictions.all").then((interceptions) => {
-      console.log("All Captured Requests:", interceptions);
     });
 
     cy.contains("Restriction removed!", { timeout: 7000 }).should("be.visible");
