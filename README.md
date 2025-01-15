@@ -49,7 +49,6 @@ npm install
 ```
 - **Environment Variables:** Create a `.env` file and add:
   ```env
-  MONGO_URI=your_mongodb_connection_string
   PORT=5001
   ```
 - **Run the Server:**
